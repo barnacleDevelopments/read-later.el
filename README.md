@@ -121,6 +121,24 @@ For better security, use an encrypted file:
 
 Make sure you have GPG set up and configured in Emacs. The file will be automatically decrypted when accessed.
 
+#### Option 3: Using password-store (Encrypted)
+
+You can securely store your credentials with [`pass`](https://www.passwordstore.org) using the [`password-store.el`](https://git.zx2c4.com/password-store/tree/contrib/emacs/password-store.el) Emacs integration.
+
+1. Create a pass entry for Instapaper: `pass insert www.instapaper.com`
+2. Add your username to the pass entry: `pass edit www.instapaper.com`
+   ```
+   your-password
+   user: your-email@example.com
+   ```
+3. Install and enable `password-store.el` (`M-x package-install RET password-store`)
+   ```
+   (require 'password-store)
+   (auth-source-pass-enable)
+   ```
+
+Instapapier should now be able to access your password-store credentials.
+
 ### 3. Test Your Configuration
 
 Run this command in Emacs to verify your credentials work:
