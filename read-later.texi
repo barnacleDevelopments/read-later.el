@@ -1,13 +1,13 @@
 \input texinfo    @c -*- texinfo -*-
 @c %**start of header
-@setfilename instapapier.info
-@settitle Instapapier Manual
+@setfilename read-later.info
+@settitle read-later Manual
 @documentencoding UTF-8
 @documentlanguage en
 @c %**end of header
 
 @copying
-This manual is for Instapapier (version 0.0.1).
+This manual is for read-later (version 1.0.0).
 
 Copyright @copyright{} 2025 Devin Davis
 
@@ -34,13 +34,13 @@ SOFTWARE.
 
 @dircategory Emacs
 @direntry
-* Instapapier: (instapapier). Send URLs to Instapaper from Emacs.
+* read-later: (read-later). Send URLs to Instapaper from Emacs.
 @end direntry
 
 @finalout
 @titlepage
-@title Instapapier Manual
-@subtitle for version 0.0.1
+@title read-later Manual
+@subtitle for version 1.0.0
 @author Devin Davis
 @page
 @vskip 0pt plus 1filll
@@ -51,19 +51,19 @@ SOFTWARE.
 
 @ifnottex
 @node Top
-@top Instapapier
+@top read-later
 
-Instapapier allows you to send URLs to your Instapaper account directly from
+read-later allows you to send URLs to your Instapaper account directly from
 Emacs with ease.
 
 @insertcopying
 @end ifnottex
 
 @menu
-* Introduction::                What is Instapapier?
-* Installation::                How to install Instapapier
+* Introduction::                What is read-later?
+* Installation::                How to install read-later
 * Configuration::               Setting up authentication
-* Usage::                       Using Instapapier commands
+* Usage::                       Using read-later commands
 * Integrations::                Working with other packages
 * Troubleshooting::             Common problems and solutions
 * API Reference::               Function and variable reference
@@ -77,8 +77,8 @@ Emacs with ease.
 @cindex Instapaper
 @cindex read later service
 
-Instapapier is an Emacs package that provides seamless integration with
-Instapaper, a popular read-it-later service. With Instapapier, you can:
+read-later is an Emacs package that provides seamless integration with
+Instapaper, a popular read-it-later service. With read-later, you can:
 
 @itemize @bullet
 @item
@@ -108,7 +108,7 @@ Optional: GPG for encrypted credential storage
 @cindex installation
 @cindex package installation
 
-There are several ways to install Instapapier, depending on your package
+There are several ways to install read-later, depending on your package
 management preferences.
 
 @menu
@@ -124,22 +124,22 @@ management preferences.
 
 @cindex manual installation
 
-The simplest way to install Instapapier is manually:
+The simplest way to install read-later is manually:
 
 @enumerate
 @item
-Clone the repository or download @file{instapapier.el}:
+Clone the repository or download @file{read-later.el}:
 
 @example
-git clone https://github.com/barnacleDevelopments/instapapier
+git clone https://github.com/barnacleDevelopments/read-later.el
 @end example
 
 @item
 Add the following to your Emacs initialization file:
 
 @lisp
-(add-to-list 'load-path "/path/to/instapapier")
-(require 'instapapier)
+(add-to-list 'load-path "/path/to/read-later")
+(require 'read-later)
 @end lisp
 @end enumerate
 
@@ -152,8 +152,8 @@ If you use @code{straight.el}, add this to your configuration:
 
 @lisp
 (straight-use-package
- '(instapapier :type git :host github
-               :repo "barnacleDevelopments/instapapier"))
+ '(read-later :type git :host github
+               :repo "barnacleDevelopments/read-later.el"))
 @end lisp
 
 @node Using use-package
@@ -164,12 +164,12 @@ If you use @code{straight.el}, add this to your configuration:
 For @code{use-package} with @code{straight.el}:
 
 @lisp
-(use-package instapapier
-  :straight (instapapier :type git :host github
-                         :repo "barnacleDevelopments/instapapier")
-  :commands (instapapier-add-url-at-point
-             instapapier-interactively-add-url
-             instapapier-add-elfeed-entry-at-point))
+(use-package read-later
+  :straight (read-later :type git :host github
+                         :repo "barnacleDevelopments/read-later.el")
+  :commands (read-later-add-url-at-point
+             read-later-interactively-add-url
+             read-later-add-elfeed-entry-at-point))
 @end lisp
 
 @node Spacemacs Installation
@@ -188,9 +188,9 @@ Add to your @code{dotspacemacs-additional-packages} in
 (defun dotspacemacs/layers ()
   (setq-default
    dotspacemacs-additional-packages
-   '((instapapier :location (recipe
+   '((read-later :location (recipe
                              :fetcher github
-                             :repo "barnacleDevelopments/instapapier")))))
+                             :repo "barnacleDevelopments/read-later.el")))))
 @end lisp
 
 @item
@@ -199,8 +199,8 @@ Add keybindings in @code{dotspacemacs/user-config}:
 @lisp
 (defun dotspacemacs/user-config ()
   (spacemacs/set-leader-keys
-    "ai a" 'instapapier-add-url-at-point
-    "ai u" 'instapapier-interactively-add-url))
+    "ai a" 'read-later-add-url-at-point
+    "ai u" 'read-later-interactively-add-url))
 @end lisp
 @end enumerate
 
@@ -217,8 +217,8 @@ Add to your @file{packages.el}:
 
 @lisp
 ;; ~/.doom.d/packages.el
-(package! instapapier
-  :recipe (:host github :repo "barnacleDevelopments/instapapier"))
+(package! read-later
+  :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
 @end lisp
 
 @item
@@ -331,7 +331,7 @@ Ensure GPG is configured in Emacs:
 After configuring your credentials, verify they work:
 
 @example
-M-x instapapier-test-auth
+M-x read-later-test-auth
 @end example
 
 You should see ``@samp{✓ Authentication successful!}'' in the minibuffer.
@@ -353,13 +353,13 @@ Instapapier provides several interactive commands for adding URLs to Instapaper.
 @node Adding URLs at Point
 @section Adding URLs at Point
 
-@findex instapapier-add-url-at-point
+@findex read-later-add-url-at-point
 @cindex URL at point
 
 To save a URL located at the cursor position:
 
 @example
-M-x instapapier-add-url-at-point
+M-x read-later-add-url-at-point
 @end example
 
 The command will detect the URL at point and send it to Instapaper.
@@ -367,19 +367,19 @@ The command will detect the URL at point and send it to Instapaper.
 @strong{Suggested keybinding:}
 
 @lisp
-(global-set-key (kbd "C-c i a") 'instapapier-add-url-at-point)
+(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
 @end lisp
 
 @node Adding URLs Interactively
 @section Adding URLs Interactively
 
-@findex instapapier-interactively-add-url
+@findex read-later-interactively-add-url
 @cindex interactive URL input
 
 To manually enter a URL:
 
 @example
-M-x instapapier-interactively-add-url
+M-x read-later-interactively-add-url
 @end example
 
 You'll be prompted to enter the URL in the minibuffer.
@@ -387,7 +387,7 @@ You'll be prompted to enter the URL in the minibuffer.
 @strong{Suggested keybinding:}
 
 @lisp
-(global-set-key (kbd "C-c i u") 'instapapier-interactively-add-url)
+(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
 @end lisp
 
 @node Keybindings
@@ -399,16 +399,16 @@ You'll be prompted to enter the URL in the minibuffer.
 Here's a complete keybinding configuration:
 
 @lisp
-(global-set-key (kbd "C-c i a") 'instapapier-add-url-at-point)
-(global-set-key (kbd "C-c i u") 'instapapier-interactively-add-url)
+(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
+(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
 @end lisp
 
 Or using @code{use-package}:
 
 @lisp
-(use-package instapapier
-  :bind (("C-c i a" . instapapier-add-url-at-point)
-         ("C-c i u" . instapapier-interactively-add-url)))
+(use-package read-later
+  :bind (("C-c i a" . read-later-add-url-at-point)
+         ("C-c i u" . read-later-interactively-add-url)))
 @end lisp
 
 @node Integrations
@@ -428,9 +428,9 @@ Instapapier integrates seamlessly with other Emacs packages.
 
 @cindex elfeed
 @cindex RSS feeds
-@findex instapapier-add-elfeed-entry-at-point
+@findex read-later-add-elfeed-entry-at-point
 
-Elfeed is a popular RSS feed reader for Emacs. Instapapier provides direct
+Elfeed is a popular RSS feed reader for Emacs. read-later provides direct
 integration to save feed entries to Instapaper.
 
 @subsection Setting Up Elfeed
@@ -451,7 +451,7 @@ First, install and configure elfeed:
 In the elfeed search buffer, place your cursor on an entry and run:
 
 @example
-M-x instapapier-add-elfeed-entry-at-point
+M-x read-later-add-elfeed-entry-at-point
 @end example
 
 @strong{Suggested configuration:}
@@ -460,7 +460,7 @@ M-x instapapier-add-elfeed-entry-at-point
 (use-package elfeed
   :ensure t
   :bind (:map elfeed-search-mode-map
-              ("i" . instapapier-add-elfeed-entry-at-point))
+              ("i" . read-later-add-elfeed-entry-at-point))
   :config
   (setq elfeed-feeds
         '("https://planet.emacslife.com/atom.xml"
@@ -498,7 +498,7 @@ Verify your credentials in @file{~/.authinfo} or @file{~/.authinfo.gpg}
 Ensure you're using your actual Instapaper email and password
 
 @item
-Run @code{M-x instapapier-test-auth} to test authentication
+Run @code{M-x read-later-test-auth} to test authentication
 
 @item
 Check that the machine name is exactly @code{www.instapaper.com}
@@ -598,8 +598,8 @@ curl -I https://www.instapaper.com/api/authenticate
 @node Interactive Functions
 @section Interactive Functions
 
-@findex instapapier-add-url-at-point
-@deffn Command instapapier-add-url-at-point
+@findex read-later-add-url-at-point
+@deffn Command read-later-add-url-at-point
 
 Add the URL at point to Instapaper. Detects the URL under the cursor
 using @code{thing-at-point} and sends it to your Instapaper account.
@@ -608,12 +608,12 @@ This is an interactive command that can be invoked with @kbd{M-x}.
 
 @strong{Example:}
 @example
-M-x instapapier-add-url-at-point
+M-x read-later-add-url-at-point
 @end example
 @end deffn
 
-@findex instapapier-interactively-add-url
-@deffn Command instapapier-interactively-add-url url
+@findex read-later-interactively-add-url
+@deffn Command read-later-interactively-add-url url
 
 Prompt for a URL and add it to Instapaper. You'll be asked to enter the
 URL in the minibuffer.
@@ -628,13 +628,13 @@ The URL to add to Instapaper (prompted interactively).
 
 @strong{Example:}
 @example
-M-x instapapier-interactively-add-url RET
+M-x read-later-interactively-add-url RET
 https://example.com/article RET
 @end example
 @end deffn
 
-@findex instapapier-add-elfeed-entry-at-point
-@deffn Command instapapier-add-elfeed-entry-at-point
+@findex read-later-add-elfeed-entry-at-point
+@deffn Command read-later-add-elfeed-entry-at-point
 
 Add the elfeed entry at point to Instapaper. This command should be used
 in the elfeed search buffer. It extracts the URL from the selected feed
@@ -647,12 +647,12 @@ This is an interactive command that can be invoked with @kbd{M-x}.
 @strong{Example:}
 @example
 ;; In elfeed-search-mode buffer
-M-x instapapier-add-elfeed-entry-at-point
+M-x read-later-add-elfeed-entry-at-point
 @end example
 @end deffn
 
-@findex instapapier-test-auth
-@deffn Command instapapier-test-auth
+@findex read-later-test-auth
+@deffn Command read-later-test-auth
 
 Test authentication with Instapaper. Sends a request to the Instapaper
 authentication endpoint and displays whether authentication succeeded.
@@ -666,7 +666,7 @@ Displays a message indicating success or failure.
 
 @strong{Example:}
 @example
-M-x instapapier-test-auth
+M-x read-later-test-auth
 ;; => "✓ Authentication successful!"
 @end example
 @end deffn
@@ -674,8 +674,8 @@ M-x instapapier-test-auth
 @node Internal Functions
 @section Internal Functions
 
-@findex instapapier-add-url
-@defun instapapier-add-url url
+@findex read-later-add-url
+@defun read-later-add-url url
 
 Internal function to add a URL to Instapaper. This is the core function
 that handles authentication, API communication, and error handling.
@@ -700,13 +700,13 @@ Authentication failed
 @end table
 
 This function is not interactive and is meant to be called by other
-Instapapier commands.
+read-later commands.
 @end defun
 
 @node Variables
 @section Variables
 
-@defvar instapapier-api-url
+@defvar read-later-api-url
 The base URL for the Instapaper API add endpoint.
 
 @strong{Default value:}
