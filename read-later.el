@@ -8,7 +8,7 @@
 ;; Modified: November 06, 2025
 ;; Version: 1.0.0
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
-;; Homepage: https://github.com/barnacleDevelopments/read-later
+;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
 ;; Package-Requires: ((emacs "24.3"))
 ;;

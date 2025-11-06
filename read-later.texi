@@ -131,7 +131,7 @@ The simplest way to install read-later is manually:
 Clone the repository or download @file{read-later.el}:
 
 @example
-git clone https://github.com/barnacleDevelopments/read-later
+git clone https://github.com/barnacleDevelopments/read-later.el
 @end example
 
 @item
@@ -153,7 +153,7 @@ If you use @code{straight.el}, add this to your configuration:
 @lisp
 (straight-use-package
  '(read-later :type git :host github
-               :repo "barnacleDevelopments/read-later"))
+               :repo "barnacleDevelopments/read-later.el"))
 @end lisp
 
 @node Using use-package
@@ -166,7 +166,7 @@ For @code{use-package} with @code{straight.el}:
 @lisp
 (use-package read-later
   :straight (read-later :type git :host github
-                         :repo "barnacleDevelopments/read-later")
+                         :repo "barnacleDevelopments/read-later.el")
   :commands (read-later-add-url-at-point
              read-later-interactively-add-url
              read-later-add-elfeed-entry-at-point))
@@ -190,7 +190,7 @@ Add to your @code{dotspacemacs-additional-packages} in
    dotspacemacs-additional-packages
    '((read-later :location (recipe
                              :fetcher github
-                             :repo "barnacleDevelopments/read-later")))))
+                             :repo "barnacleDevelopments/read-later.el")))))
 @end lisp
 
 @item
@@ -218,7 +218,7 @@ Add to your @file{packages.el}:
 @lisp
 ;; ~/.doom.d/packages.el
 (package! read-later
-  :recipe (:host github :repo "barnacleDevelopments/read-later"))
+  :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
 @end lisp
 
 @item

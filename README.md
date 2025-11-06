@@ -34,14 +34,14 @@ Send URLs to Instapaper directly from Emacs with ease.
 
 ```elisp
 (straight-use-package
- '(read-later :type git :host github :repo "barnacleDevelopments/read-later"))
+ '(read-later :type git :host github :repo "barnacleDevelopments/read-later.el"))
 ```
 
 ### Using use-package with straight.el
 
 ```elisp
 (use-package read-later
-  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later")
+  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later.el")
   :commands (read-later-add-url-at-point
              read-later-interactively-add-url
              read-later-add-elfeed-entry-at-point))
@@ -57,7 +57,7 @@ Add to your `dotspacemacs-additional-packages`:
    dotspacemacs-additional-packages
    '((read-later :location (recipe
                              :fetcher github
-                             :repo "barnacleDevelopments/read-later")))))
+                             :repo "barnacleDevelopments/read-later.el")))))
 ```
 
 Then add keybindings in `dotspacemacs/user-config`:
@@ -80,7 +80,7 @@ Add to your `packages.el`:
 ```elisp
 ;; ~/.doom.d/packages.el
 (package! read-later
-  :recipe (:host github :repo "barnacleDevelopments/read-later"))
+  :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
 ```
 
 Run `doom sync` after adding the package, then restart Emacs.
@@ -223,7 +223,7 @@ Here's a complete example configuration:
 
 ;; Install and configure read-later
 (use-package read-later
-  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later")
+  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later.el")
   :bind (("C-c i a" . read-later-add-url-at-point)
          ("C-c i u" . read-later-interactively-add-url)
          :map elfeed-search-mode-map
@@ -271,7 +271,7 @@ MIT License - see read-later.el for full license text.
 
 ## Contributing
 
-Issues and pull requests are welcome at [https://github.com/barnacleDevelopments/read-later](https://github.com/barnacleDevelopments/read-later)
+Issues and pull requests are welcome at [https://github.com/barnacleDevelopments/read-later.el](https://github.com/barnacleDevelopments/read-later.el)
 
 ## Author
 

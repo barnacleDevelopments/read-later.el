@@ -121,7 +121,7 @@ The simplest way to install read-later is manually:
 
   1. Clone the repository or download ‘read-later.el’:
 
-          git clone https://github.com/barnacleDevelopments/read-later
+          git clone https://github.com/barnacleDevelopments/read-later.el
 
   2. Add the following to your Emacs initialization file:
 
@@ -138,7 +138,7 @@ If you use ‘straight.el’, add this to your configuration:
 
      (straight-use-package
       '(read-later :type git :host github
-                    :repo "barnacleDevelopments/read-later"))
+                    :repo "barnacleDevelopments/read-later.el"))
 
 
 File: read-later.info,  Node: Using use-package,  Next: Spacemacs Installation,  Prev: Using straight.el,  Up: Installation
@@ -150,7 +150,7 @@ For ‘use-package’ with ‘straight.el’:
 
      (use-package read-later
        :straight (read-later :type git :host github
-                              :repo "barnacleDevelopments/read-later")
+                              :repo "barnacleDevelopments/read-later.el")
        :commands (read-later-add-url-at-point
                   read-later-interactively-add-url
                   read-later-add-elfeed-entry-at-point))
@@ -171,7 +171,7 @@ For Spacemacs users:
              dotspacemacs-additional-packages
              '((read-later :location (recipe
                                        :fetcher github
-                                       :repo "barnacleDevelopments/read-later")))))
+                                       :repo "barnacleDevelopments/read-later.el")))))
 
   2. Add keybindings in ‘dotspacemacs/user-config’:
 
@@ -192,7 +192,7 @@ For Doom Emacs users:
 
           ;; ~/.doom.d/packages.el
           (package! read-later
-            :recipe (:host github :repo "barnacleDevelopments/read-later"))
+            :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
 
   2. Run ‘doom sync’ and restart Emacs.
 
@@ -678,32 +678,32 @@ Node: Top1399
 Node: Introduction3249
 Node: Installation3929
 Node: Manual Installation4458
-Node: Using straight.el4939
-Node: Using use-package5303
-Node: Spacemacs Installation5829
-Node: Doom Emacs Installation6677
-Node: Configuration7089
-Node: Setting Up Instapaper7498
-Node: Configuring Authentication7881
-Node: Plain Text Credentials8316
-Node: Encrypted Credentials8728
-Node: Testing Authentication9316
-Node: Usage9645
-Node: Adding URLs at Point10012
-Node: Adding URLs Interactively10416
-Node: Keybindings10826
-Node: Integrations11316
-Node: Elfeed Integration11569
-Node: Troubleshooting12700
-Node: Authentication Issues13100
-Node: Credential Issues13677
-Node: GPG Issues14080
-Node: Network Issues14491
-Node: API Reference14922
-Node: Interactive Functions15224
-Node: Internal Functions17147
-Node: Variables17936
-Node: Index18270
+Node: Using straight.el4942
+Node: Using use-package5309
+Node: Spacemacs Installation5838
+Node: Doom Emacs Installation6689
+Node: Configuration7104
+Node: Setting Up Instapaper7513
+Node: Configuring Authentication7896
+Node: Plain Text Credentials8331
+Node: Encrypted Credentials8743
+Node: Testing Authentication9331
+Node: Usage9660
+Node: Adding URLs at Point10027
+Node: Adding URLs Interactively10431
+Node: Keybindings10841
+Node: Integrations11331
+Node: Elfeed Integration11584
+Node: Troubleshooting12715
+Node: Authentication Issues13115
+Node: Credential Issues13692
+Node: GPG Issues14095
+Node: Network Issues14506
+Node: API Reference14937
+Node: Interactive Functions15239
+Node: Internal Functions17162
+Node: Variables17951
+Node: Index18285
 
 End Tag Table
 
