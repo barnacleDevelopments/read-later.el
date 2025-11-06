@@ -2,7 +2,7 @@
   <img src="images/instapaper-logo.png" alt="Instapaper Logo" width="100"/>
 </p>
 
-# instapapier.el
+# read-later.el
 
 Send URLs to Instapaper directly from Emacs with ease.
 
@@ -22,29 +22,29 @@ Send URLs to Instapaper directly from Emacs with ease.
 
 ### Manual Installation
 
-1. Clone this repository or download `instapapier.el`
+1. Clone this repository or download `read-later.el`
 2. Add to your Emacs load path:
 
 ```elisp
-(add-to-list 'load-path "/path/to/instapapier")
-(require 'instapapier)
+(add-to-list 'load-path "/path/to/read-later")
+(require 'read-later)
 ```
 
 ### Using straight.el
 
 ```elisp
 (straight-use-package
- '(instapapier :type git :host github :repo "barnacleDevelopments/instapapier"))
+ '(read-later :type git :host github :repo "barnacleDevelopments/read-later"))
 ```
 
 ### Using use-package with straight.el
 
 ```elisp
-(use-package instapapier
-  :straight (instapapier :type git :host github :repo "barnacleDevelopments/instapapier")
-  :commands (instapapier-add-url-at-point
-             instapapier-interactively-add-url
-             instapapier-add-elfeed-entry-at-point))
+(use-package read-later
+  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later")
+  :commands (read-later-add-url-at-point
+             read-later-interactively-add-url
+             read-later-add-elfeed-entry-at-point))
 ```
 
 ### Spacemacs
@@ -55,9 +55,9 @@ Add to your `dotspacemacs-additional-packages`:
 (defun dotspacemacs/layers ()
   (setq-default
    dotspacemacs-additional-packages
-   '((instapapier :location (recipe
+   '((read-later :location (recipe
                              :fetcher github
-                             :repo "barnacleDevelopments/instapapier")))))
+                             :repo "barnacleDevelopments/read-later")))))
 ```
 
 Then add keybindings in `dotspacemacs/user-config`:
@@ -65,12 +65,12 @@ Then add keybindings in `dotspacemacs/user-config`:
 ```elisp
 (defun dotspacemacs/user-config ()
   (spacemacs/set-leader-keys
-    "ai a" 'instapapier-add-url-at-point
-    "ai u" 'instapapier-interactively-add-url)
+    "ai a" 'read-later-add-url-at-point
+    "ai u" 'read-later-interactively-add-url)
 
   ;; For elfeed integration
   (with-eval-after-load 'elfeed
-    (define-key elfeed-search-mode-map (kbd "i") 'instapapier-add-elfeed-entry-at-point)))
+    (define-key elfeed-search-mode-map (kbd "i") 'read-later-add-elfeed-entry-at-point)))
 ```
 
 ### Doom Emacs
@@ -79,8 +79,8 @@ Add to your `packages.el`:
 
 ```elisp
 ;; ~/.doom.d/packages.el
-(package! instapapier
-  :recipe (:host github :repo "barnacleDevelopments/instapapier"))
+(package! read-later
+  :recipe (:host github :repo "barnacleDevelopments/read-later"))
 ```
 
 Run `doom sync` after adding the package, then restart Emacs.
@@ -96,7 +96,7 @@ Run `doom sync` after adding the package, then restart Emacs.
 
 ### 2. Configure Authentication in Emacs
 
-instapapier uses Emacs' built-in `auth-source` for secure credential storage. You'll need to add your Instapaper credentials to one of these files:
+read-later uses Emacs' built-in `auth-source` for secure credential storage. You'll need to add your Instapaper credentials to one of these files:
 
 #### Option 1: Using ~/.authinfo (Plain Text)
 
@@ -130,7 +130,7 @@ Make sure you have GPG set up and configured in Emacs. The file will be automati
 Run this command in Emacs to verify your credentials work:
 
 ```elisp
-M-x instapapier-test-auth
+M-x read-later-test-auth
 ```
 
 You should see "✓ Authentication successful!" in the minibuffer.
@@ -142,13 +142,13 @@ You should see "✓ Authentication successful!" in the minibuffer.
 Place your cursor on a URL in any buffer and run:
 
 ```elisp
-M-x instapapier-add-url-at-point
+M-x read-later-add-url-at-point
 ```
 
 Suggested keybinding:
 
 ```elisp
-(global-set-key (kbd "C-c i a") 'instapapier-add-url-at-point)
+(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
 ```
 
 ### Add URL Interactively
@@ -156,7 +156,7 @@ Suggested keybinding:
 To manually enter a URL:
 
 ```elisp
-M-x instapapier-interactively-add-url
+M-x read-later-interactively-add-url
 ```
 
 You'll be prompted to enter the URL in the minibuffer.
@@ -164,7 +164,7 @@ You'll be prompted to enter the URL in the minibuffer.
 Suggested keybinding:
 
 ```elisp
-(global-set-key (kbd "C-c i u") 'instapapier-interactively-add-url)
+(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
 ```
 
 ### Integration with elfeed
@@ -189,7 +189,7 @@ First, install and configure elfeed:
 In the elfeed search buffer, place your cursor on an entry and run:
 
 ```elisp
-M-x instapapier-add-elfeed-entry-at-point
+M-x read-later-add-elfeed-entry-at-point
 ```
 
 Suggested keybinding for elfeed-search-mode:
@@ -198,7 +198,7 @@ Suggested keybinding for elfeed-search-mode:
 (use-package elfeed
   :ensure t
   :bind (:map elfeed-search-mode-map
-              ("i" . instapapier-add-elfeed-entry-at-point))
+              ("i" . read-later-add-elfeed-entry-at-point))
   :config
   (setq elfeed-feeds
         '("https://example.com/feed.xml"
@@ -221,13 +221,13 @@ Here's a complete example configuration:
           "https://sachachua.com/blog/feed/"
           "https://www.reddit.com/r/emacs/.rss")))
 
-;; Install and configure instapapier
-(use-package instapapier
-  :straight (instapapier :type git :host github :repo "barnacleDevelopments/instapapier")
-  :bind (("C-c i a" . instapapier-add-url-at-point)
-         ("C-c i u" . instapapier-interactively-add-url)
+;; Install and configure read-later
+(use-package read-later
+  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later")
+  :bind (("C-c i a" . read-later-add-url-at-point)
+         ("C-c i u" . read-later-interactively-add-url)
          :map elfeed-search-mode-map
-         ("i" . instapapier-add-elfeed-entry-at-point)))
+         ("i" . read-later-add-elfeed-entry-at-point)))
 ```
 
 ## Troubleshooting
@@ -238,7 +238,7 @@ If you see "✗ Authentication failed":
 
 1. Verify your credentials in `~/.authinfo` or `~/.authinfo.gpg`
 2. Make sure you're using your actual Instapaper email and password
-3. Run `M-x instapapier-test-auth` to test authentication
+3. Run `M-x read-later-test-auth` to test authentication
 4. Check that the machine name is exactly `www.instapaper.com`
 
 ### auth-source Not Finding Credentials
@@ -267,11 +267,11 @@ This package uses the Instapaper Simple API. For more information, see:
 
 ## License
 
-MIT License - see instapapier.el for full license text.
+MIT License - see read-later.el for full license text.
 
 ## Contributing
 
-Issues and pull requests are welcome at [https://github.com/barnacleDevelopments/instapapier](https://github.com/barnacleDevelopments/instapapier)
+Issues and pull requests are welcome at [https://github.com/barnacleDevelopments/read-later](https://github.com/barnacleDevelopments/read-later)
 
 ## Author
 

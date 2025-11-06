@@ -1,21 +1,21 @@
-;;; instapapier.el --- add urls to instapaper with a zing -*- lexical-binding: t; -*-
+;;; read-later.el --- add urls to instapaper with a zing -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 Devin Davis
 ;;
 ;; Author: Devin Davis <devindavis@pop-os>
 ;; Maintainer: Devin Davis <devindavis@pop-os>
 ;; Created: October 25, 2025
-;; Modified: October 25, 2025
-;; Version: 0.0.1
+;; Modified: November 06, 2025
+;; Version: 1.0.0
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
-;; Homepage: https://github.com/barnacleDevelopments/instapapier
+;; Homepage: https://github.com/barnacleDevelopments/read-later
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
 ;; Package-Requires: ((emacs "24.3"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
-;; instapapier.el was made to provide a comprehensive url adding experience
+;; read-later.el was made to provide a comprehensive url adding experience
 ;;; MIT License
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,11 +40,11 @@
 (require 'url)
 (require 'url-auth)
 
-(setq instapapier-api-url "https://www.instapaper.com/api/add")
+(setq read-later-api-url "https://www.instapaper.com/api/add")
 (setq url-debug t)
 
 ;;;###autoload
-(defun instapapier-add-url (url)
+(defun read-later-add-url (url)
   "Add URL to Instapaper account asynchronously."
   (condition-case err
       (let* ((auth-info (car (auth-source-search :host "www.instapaper.com"
@@ -84,7 +84,7 @@
      nil)))
 
 ;;;###autoload
-(defun instapapier-test-auth ()
+(defun read-later-test-auth ()
   "Test Instapaper authentication asynchronously."
   (interactive)
   (require 'url)
@@ -115,28 +115,28 @@
     (message "Testing authentication...")))
 
 ;;;###autoload
-(defun instapapier-add-url-at-point()
+(defun read-later-add-url-at-point()
   "Add the URL at point to Instapaper."
   (interactive)
   (let ((url (thing-at-point 'url)))
-    (instapapier-add-url url)))
+    (read-later-add-url url)))
 
 ;;;###autoload
-(defun instapapier-add-elfeed-entry-at-point()
+(defun read-later-add-elfeed-entry-at-point()
   "Add the elfeed entry at point in show buffer."
   (interactive)
   (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
-    (instapapier-add-url url)))
+    (read-later-add-url url)))
 
 ;;;###autoload
-(defun instapapier-interactively-add-url(url)
+(defun read-later-interactively-add-url(url)
   "Add URL interactively."
-  (interactive "sInstapaper URL:")
-  (instapapier-add-url url))
+  (interactive "sArticle URL:")
+  (read-later-add-url url))
 
-(provide 'instapapier)
+(provide 'read-later)
 
-;;; instapapier.el ends here
+;;; read-later.el ends here
 
 
 

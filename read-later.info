@@ -1,7 +1,7 @@
-This is instapapier.info, produced by makeinfo version 7.1 from
-instapapier.texi.
+This is read-later.info, produced by makeinfo version 7.1 from
+read-later.texi.
 
-This manual is for Instapapier (version 0.0.1).
+This manual is for read-later (version 1.0.0).
 
    Copyright © 2025 Devin Davis
 
@@ -26,19 +26,19 @@ This manual is for Instapapier (version 0.0.1).
      SOFTWARE.
 INFO-DIR-SECTION Emacs
 START-INFO-DIR-ENTRY
-* Instapapier: (instapapier). Send URLs to Instapaper from Emacs.
+* read-later: (read-later). Send URLs to Instapaper from Emacs.
 END-INFO-DIR-ENTRY
 
 
-File: instapapier.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: read-later.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
-Instapapier
-***********
+read-later
+**********
 
-Instapapier allows you to send URLs to your Instapaper account directly
+read-later allows you to send URLs to your Instapaper account directly
 from Emacs with ease.
 
-   This manual is for Instapapier (version 0.0.1).
+   This manual is for read-later (version 1.0.0).
 
    Copyright © 2025 Devin Davis
 
@@ -64,23 +64,23 @@ from Emacs with ease.
 
 * Menu:
 
-* Introduction::                What is Instapapier?
-* Installation::                How to install Instapapier
+* Introduction::                What is read-later?
+* Installation::                How to install read-later
 * Configuration::               Setting up authentication
-* Usage::                       Using Instapapier commands
+* Usage::                       Using read-later commands
 * Integrations::                Working with other packages
 * Troubleshooting::             Common problems and solutions
 * API Reference::               Function and variable reference
 * Index::                       Complete index
 
 
-File: instapapier.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
+File: read-later.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
 
 1 Introduction
 **************
 
-Instapapier is an Emacs package that provides seamless integration with
-Instapaper, a popular read-it-later service.  With Instapapier, you can:
+read-later is an Emacs package that provides seamless integration with
+Instapaper, a popular read-it-later service.  With read-later, you can:
 
    • Save URLs to your Instapaper account from anywhere in Emacs
    • Integrate with elfeed to save RSS feed entries
@@ -95,12 +95,12 @@ Instapaper, a popular read-it-later service.  With Instapapier, you can:
    • Optional: GPG for encrypted credential storage
 
 
-File: instapapier.info,  Node: Installation,  Next: Configuration,  Prev: Introduction,  Up: Top
+File: read-later.info,  Node: Installation,  Next: Configuration,  Prev: Introduction,  Up: Top
 
 2 Installation
 **************
 
-There are several ways to install Instapapier, depending on your package
+There are several ways to install read-later, depending on your package
 management preferences.
 
 * Menu:
@@ -112,24 +112,24 @@ management preferences.
 * Doom Emacs Installation::     Installing in Doom Emacs
 
 
-File: instapapier.info,  Node: Manual Installation,  Next: Using straight.el,  Up: Installation
+File: read-later.info,  Node: Manual Installation,  Next: Using straight.el,  Up: Installation
 
 2.1 Manual Installation
 =======================
 
-The simplest way to install Instapapier is manually:
+The simplest way to install read-later is manually:
 
-  1. Clone the repository or download ‘instapapier.el’:
+  1. Clone the repository or download ‘read-later.el’:
 
-          git clone https://github.com/barnacleDevelopments/instapapier
+          git clone https://github.com/barnacleDevelopments/read-later
 
   2. Add the following to your Emacs initialization file:
 
-          (add-to-list 'load-path "/path/to/instapapier")
-          (require 'instapapier)
+          (add-to-list 'load-path "/path/to/read-later")
+          (require 'read-later)
 
 
-File: instapapier.info,  Node: Using straight.el,  Next: Using use-package,  Prev: Manual Installation,  Up: Installation
+File: read-later.info,  Node: Using straight.el,  Next: Using use-package,  Prev: Manual Installation,  Up: Installation
 
 2.2 Using straight.el
 =====================
@@ -137,26 +137,26 @@ File: instapapier.info,  Node: Using straight.el,  Next: Using use-package,  Pre
 If you use ‘straight.el’, add this to your configuration:
 
      (straight-use-package
-      '(instapapier :type git :host github
-                    :repo "barnacleDevelopments/instapapier"))
+      '(read-later :type git :host github
+                    :repo "barnacleDevelopments/read-later"))
 
 
-File: instapapier.info,  Node: Using use-package,  Next: Spacemacs Installation,  Prev: Using straight.el,  Up: Installation
+File: read-later.info,  Node: Using use-package,  Next: Spacemacs Installation,  Prev: Using straight.el,  Up: Installation
 
 2.3 Using use-package
 =====================
 
 For ‘use-package’ with ‘straight.el’:
 
-     (use-package instapapier
-       :straight (instapapier :type git :host github
-                              :repo "barnacleDevelopments/instapapier")
-       :commands (instapapier-add-url-at-point
-                  instapapier-interactively-add-url
-                  instapapier-add-elfeed-entry-at-point))
+     (use-package read-later
+       :straight (read-later :type git :host github
+                              :repo "barnacleDevelopments/read-later")
+       :commands (read-later-add-url-at-point
+                  read-later-interactively-add-url
+                  read-later-add-elfeed-entry-at-point))
 
 
-File: instapapier.info,  Node: Spacemacs Installation,  Next: Doom Emacs Installation,  Prev: Using use-package,  Up: Installation
+File: read-later.info,  Node: Spacemacs Installation,  Next: Doom Emacs Installation,  Prev: Using use-package,  Up: Installation
 
 2.4 Spacemacs Installation
 ==========================
@@ -169,19 +169,19 @@ For Spacemacs users:
           (defun dotspacemacs/layers ()
             (setq-default
              dotspacemacs-additional-packages
-             '((instapapier :location (recipe
+             '((read-later :location (recipe
                                        :fetcher github
-                                       :repo "barnacleDevelopments/instapapier")))))
+                                       :repo "barnacleDevelopments/read-later")))))
 
   2. Add keybindings in ‘dotspacemacs/user-config’:
 
           (defun dotspacemacs/user-config ()
             (spacemacs/set-leader-keys
-              "ai a" 'instapapier-add-url-at-point
-              "ai u" 'instapapier-interactively-add-url))
+              "ai a" 'read-later-add-url-at-point
+              "ai u" 'read-later-interactively-add-url))
 
 
-File: instapapier.info,  Node: Doom Emacs Installation,  Prev: Spacemacs Installation,  Up: Installation
+File: read-later.info,  Node: Doom Emacs Installation,  Prev: Spacemacs Installation,  Up: Installation
 
 2.5 Doom Emacs Installation
 ===========================
@@ -191,13 +191,13 @@ For Doom Emacs users:
   1. Add to your ‘packages.el’:
 
           ;; ~/.doom.d/packages.el
-          (package! instapapier
-            :recipe (:host github :repo "barnacleDevelopments/instapapier"))
+          (package! read-later
+            :recipe (:host github :repo "barnacleDevelopments/read-later"))
 
   2. Run ‘doom sync’ and restart Emacs.
 
 
-File: instapapier.info,  Node: Configuration,  Next: Usage,  Prev: Installation,  Up: Top
+File: read-later.info,  Node: Configuration,  Next: Usage,  Prev: Installation,  Up: Top
 
 3 Configuration
 ***************
@@ -212,7 +212,7 @@ credential management.
 * Testing Authentication::      Verifying your setup
 
 
-File: instapapier.info,  Node: Setting Up Instapaper,  Next: Configuring Authentication,  Up: Configuration
+File: read-later.info,  Node: Setting Up Instapaper,  Next: Configuring Authentication,  Up: Configuration
 
 3.1 Setting Up Instapaper
 =========================
@@ -225,7 +225,7 @@ If you don't already have an Instapaper account:
   4. Verify your email address
 
 
-File: instapapier.info,  Node: Configuring Authentication,  Next: Testing Authentication,  Prev: Setting Up Instapaper,  Up: Configuration
+File: read-later.info,  Node: Configuring Authentication,  Next: Testing Authentication,  Prev: Setting Up Instapaper,  Up: Configuration
 
 3.2 Configuring Authentication
 ==============================
@@ -239,7 +239,7 @@ There are two main options:
 * Encrypted Credentials::       Using ~/.authinfo.gpg (recommended)
 
 
-File: instapapier.info,  Node: Plain Text Credentials,  Next: Encrypted Credentials,  Up: Configuring Authentication
+File: read-later.info,  Node: Plain Text Credentials,  Next: Encrypted Credentials,  Up: Configuring Authentication
 
 3.2.1 Plain Text Credentials
 ----------------------------
@@ -254,7 +254,7 @@ with:
      chmod 600 ~/.authinfo
 
 
-File: instapapier.info,  Node: Encrypted Credentials,  Prev: Plain Text Credentials,  Up: Configuring Authentication
+File: read-later.info,  Node: Encrypted Credentials,  Prev: Plain Text Credentials,  Up: Configuring Authentication
 
 3.2.2 Encrypted Credentials (Recommended)
 -----------------------------------------
@@ -275,19 +275,19 @@ For better security, use an encrypted file:
      (epa-file-enable)
 
 
-File: instapapier.info,  Node: Testing Authentication,  Prev: Configuring Authentication,  Up: Configuration
+File: read-later.info,  Node: Testing Authentication,  Prev: Configuring Authentication,  Up: Configuration
 
 3.3 Testing Authentication
 ==========================
 
 After configuring your credentials, verify they work:
 
-     M-x instapapier-test-auth
+     M-x read-later-test-auth
 
    You should see "‘✓ Authentication successful!’" in the minibuffer.
 
 
-File: instapapier.info,  Node: Usage,  Next: Integrations,  Prev: Configuration,  Up: Top
+File: read-later.info,  Node: Usage,  Next: Integrations,  Prev: Configuration,  Up: Top
 
 4 Usage
 *******
@@ -302,56 +302,56 @@ Instapaper.
 * Keybindings::                 Suggested key configurations
 
 
-File: instapapier.info,  Node: Adding URLs at Point,  Next: Adding URLs Interactively,  Up: Usage
+File: read-later.info,  Node: Adding URLs at Point,  Next: Adding URLs Interactively,  Up: Usage
 
 4.1 Adding URLs at Point
 ========================
 
 To save a URL located at the cursor position:
 
-     M-x instapapier-add-url-at-point
+     M-x read-later-add-url-at-point
 
    The command will detect the URL at point and send it to Instapaper.
 
    *Suggested keybinding:*
 
-     (global-set-key (kbd "C-c i a") 'instapapier-add-url-at-point)
+     (global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
 
 
-File: instapapier.info,  Node: Adding URLs Interactively,  Next: Keybindings,  Prev: Adding URLs at Point,  Up: Usage
+File: read-later.info,  Node: Adding URLs Interactively,  Next: Keybindings,  Prev: Adding URLs at Point,  Up: Usage
 
 4.2 Adding URLs Interactively
 =============================
 
 To manually enter a URL:
 
-     M-x instapapier-interactively-add-url
+     M-x read-later-interactively-add-url
 
    You'll be prompted to enter the URL in the minibuffer.
 
    *Suggested keybinding:*
 
-     (global-set-key (kbd "C-c i u") 'instapapier-interactively-add-url)
+     (global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
 
 
-File: instapapier.info,  Node: Keybindings,  Prev: Adding URLs Interactively,  Up: Usage
+File: read-later.info,  Node: Keybindings,  Prev: Adding URLs Interactively,  Up: Usage
 
 4.3 Keybindings
 ===============
 
 Here's a complete keybinding configuration:
 
-     (global-set-key (kbd "C-c i a") 'instapapier-add-url-at-point)
-     (global-set-key (kbd "C-c i u") 'instapapier-interactively-add-url)
+     (global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
+     (global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
 
    Or using ‘use-package’:
 
-     (use-package instapapier
-       :bind (("C-c i a" . instapapier-add-url-at-point)
-              ("C-c i u" . instapapier-interactively-add-url)))
+     (use-package read-later
+       :bind (("C-c i a" . read-later-add-url-at-point)
+              ("C-c i u" . read-later-interactively-add-url)))
 
 
-File: instapapier.info,  Node: Integrations,  Next: Troubleshooting,  Prev: Usage,  Up: Top
+File: read-later.info,  Node: Integrations,  Next: Troubleshooting,  Prev: Usage,  Up: Top
 
 5 Integrations
 **************
@@ -363,12 +363,12 @@ Instapapier integrates seamlessly with other Emacs packages.
 * Elfeed Integration::          Saving RSS feed entries
 
 
-File: instapapier.info,  Node: Elfeed Integration,  Up: Integrations
+File: read-later.info,  Node: Elfeed Integration,  Up: Integrations
 
 5.1 Elfeed Integration
 ======================
 
-Elfeed is a popular RSS feed reader for Emacs.  Instapapier provides
+Elfeed is a popular RSS feed reader for Emacs.  read-later provides
 direct integration to save feed entries to Instapaper.
 
 5.1.1 Setting Up Elfeed
@@ -388,14 +388,14 @@ First, install and configure elfeed:
 
 In the elfeed search buffer, place your cursor on an entry and run:
 
-     M-x instapapier-add-elfeed-entry-at-point
+     M-x read-later-add-elfeed-entry-at-point
 
    *Suggested configuration:*
 
      (use-package elfeed
        :ensure t
        :bind (:map elfeed-search-mode-map
-                   ("i" . instapapier-add-elfeed-entry-at-point))
+                   ("i" . read-later-add-elfeed-entry-at-point))
        :config
        (setq elfeed-feeds
              '("https://planet.emacslife.com/atom.xml"
@@ -405,7 +405,7 @@ In the elfeed search buffer, place your cursor on an entry and run:
 Instapaper.
 
 
-File: instapapier.info,  Node: Troubleshooting,  Next: API Reference,  Prev: Integrations,  Up: Top
+File: read-later.info,  Node: Troubleshooting,  Next: API Reference,  Prev: Integrations,  Up: Top
 
 6 Troubleshooting
 *****************
@@ -418,7 +418,7 @@ File: instapapier.info,  Node: Troubleshooting,  Next: API Reference,  Prev: Int
 * Network Issues::              Connection problems
 
 
-File: instapapier.info,  Node: Authentication Issues,  Next: Credential Issues,  Up: Troubleshooting
+File: read-later.info,  Node: Authentication Issues,  Next: Credential Issues,  Up: Troubleshooting
 
 6.1 Authentication Issues
 =========================
@@ -429,7 +429,7 @@ If you see "‘✗ Authentication failed’":
 
   2. Ensure you're using your actual Instapaper email and password
 
-  3. Run ‘M-x instapapier-test-auth’ to test authentication
+  3. Run ‘M-x read-later-test-auth’ to test authentication
 
   4. Check that the machine name is exactly ‘www.instapaper.com’
 
@@ -437,7 +437,7 @@ If you see "‘✗ Authentication failed’":
      password PASSWORD’
 
 
-File: instapapier.info,  Node: Credential Issues,  Next: GPG Issues,  Prev: Authentication Issues,  Up: Troubleshooting
+File: read-later.info,  Node: Credential Issues,  Next: GPG Issues,  Prev: Authentication Issues,  Up: Troubleshooting
 
 6.2 Credential Issues
 =====================
@@ -452,7 +452,7 @@ correctly:
      (message "auth-sources: %s" auth-sources)
 
 
-File: instapapier.info,  Node: GPG Issues,  Next: Network Issues,  Prev: Credential Issues,  Up: Troubleshooting
+File: read-later.info,  Node: GPG Issues,  Next: Network Issues,  Prev: Credential Issues,  Up: Troubleshooting
 
 6.3 GPG Issues
 ==============
@@ -471,7 +471,7 @@ If you have trouble with ‘.authinfo.gpg’:
   3. Test decryption by opening ‘~/.authinfo.gpg’ in Emacs
 
 
-File: instapapier.info,  Node: Network Issues,  Prev: GPG Issues,  Up: Troubleshooting
+File: read-later.info,  Node: Network Issues,  Prev: GPG Issues,  Up: Troubleshooting
 
 6.4 Network Issues
 ==================
@@ -491,7 +491,7 @@ If you experience network problems:
           curl -I https://www.instapaper.com/api/authenticate
 
 
-File: instapapier.info,  Node: API Reference,  Next: Index,  Prev: Troubleshooting,  Up: Top
+File: read-later.info,  Node: API Reference,  Next: Index,  Prev: Troubleshooting,  Up: Top
 
 7 API Reference
 ***************
@@ -503,12 +503,12 @@ File: instapapier.info,  Node: API Reference,  Next: Index,  Prev: Troubleshooti
 * Variables::                   Configuration variables
 
 
-File: instapapier.info,  Node: Interactive Functions,  Next: Internal Functions,  Up: API Reference
+File: read-later.info,  Node: Interactive Functions,  Next: Internal Functions,  Up: API Reference
 
 7.1 Interactive Functions
 =========================
 
- -- Command: instapapier-add-url-at-point
+ -- Command: read-later-add-url-at-point
 
      Add the URL at point to Instapaper.  Detects the URL under the
      cursor using ‘thing-at-point’ and sends it to your Instapaper
@@ -517,9 +517,9 @@ File: instapapier.info,  Node: Interactive Functions,  Next: Internal Functions,
      This is an interactive command that can be invoked with ‘M-x’.
 
      *Example:*
-          M-x instapapier-add-url-at-point
+          M-x read-later-add-url-at-point
 
- -- Command: instapapier-interactively-add-url url
+ -- Command: read-later-interactively-add-url url
 
      Prompt for a URL and add it to Instapaper.  You'll be asked to
      enter the URL in the minibuffer.
@@ -531,10 +531,10 @@ File: instapapier.info,  Node: Interactive Functions,  Next: Internal Functions,
           The URL to add to Instapaper (prompted interactively).
 
      *Example:*
-          M-x instapapier-interactively-add-url RET
+          M-x read-later-interactively-add-url RET
           https://example.com/article RET
 
- -- Command: instapapier-add-elfeed-entry-at-point
+ -- Command: read-later-add-elfeed-entry-at-point
 
      Add the elfeed entry at point to Instapaper.  This command should
      be used in the elfeed search buffer.  It extracts the URL from the
@@ -546,9 +546,9 @@ File: instapapier.info,  Node: Interactive Functions,  Next: Internal Functions,
 
      *Example:*
           ;; In elfeed-search-mode buffer
-          M-x instapapier-add-elfeed-entry-at-point
+          M-x read-later-add-elfeed-entry-at-point
 
- -- Command: instapapier-test-auth
+ -- Command: read-later-test-auth
 
      Test authentication with Instapaper.  Sends a request to the
      Instapaper authentication endpoint and displays whether
@@ -562,16 +562,16 @@ File: instapapier.info,  Node: Interactive Functions,  Next: Internal Functions,
      *Returns:* Displays a message indicating success or failure.
 
      *Example:*
-          M-x instapapier-test-auth
+          M-x read-later-test-auth
           ;; => "✓ Authentication successful!"
 
 
-File: instapapier.info,  Node: Internal Functions,  Next: Variables,  Prev: Interactive Functions,  Up: API Reference
+File: read-later.info,  Node: Internal Functions,  Next: Variables,  Prev: Interactive Functions,  Up: API Reference
 
 7.2 Internal Functions
 ======================
 
- -- Function: instapapier-add-url url
+ -- Function: read-later-add-url url
 
      Internal function to add a URL to Instapaper.  This is the core
      function that handles authentication, API communication, and error
@@ -592,15 +592,15 @@ File: instapapier.info,  Node: Internal Functions,  Next: Variables,  Prev: Inte
           Authentication failed
 
      This function is not interactive and is meant to be called by other
-     Instapapier commands.
+     read-later commands.
 
 
-File: instapapier.info,  Node: Variables,  Prev: Internal Functions,  Up: API Reference
+File: read-later.info,  Node: Variables,  Prev: Internal Functions,  Up: API Reference
 
 7.3 Variables
 =============
 
- -- Variable: instapapier-api-url
+ -- Variable: read-later-api-url
      The base URL for the Instapaper API add endpoint.
 
      *Default value:* ‘"https://www.instapaper.com/api/add"’
@@ -608,7 +608,7 @@ File: instapapier.info,  Node: Variables,  Prev: Internal Functions,  Up: API Re
      This variable should not normally need to be changed.
 
 
-File: instapapier.info,  Node: Index,  Prev: API Reference,  Up: Top
+File: read-later.info,  Node: Index,  Prev: API Reference,  Up: Top
 
 Index
 *****
@@ -674,36 +674,36 @@ Index
 
 
 Tag Table:
-Node: Top1404
-Node: Introduction3262
-Node: Installation3945
-Node: Manual Installation4476
-Node: Using straight.el4963
-Node: Using use-package5330
-Node: Spacemacs Installation5863
-Node: Doom Emacs Installation6716
-Node: Configuration7131
-Node: Setting Up Instapaper7541
-Node: Configuring Authentication7925
-Node: Plain Text Credentials8361
-Node: Encrypted Credentials8774
-Node: Testing Authentication9363
-Node: Usage9694
-Node: Adding URLs at Point10062
-Node: Adding URLs Interactively10469
-Node: Keybindings10882
-Node: Integrations11378
-Node: Elfeed Integration11632
-Node: Troubleshooting12767
-Node: Authentication Issues13168
-Node: Credential Issues13747
-Node: GPG Issues14151
-Node: Network Issues14563
-Node: API Reference14995
-Node: Interactive Functions15298
-Node: Internal Functions17230
-Node: Variables18022
-Node: Index18358
+Node: Top1399
+Node: Introduction3249
+Node: Installation3929
+Node: Manual Installation4458
+Node: Using straight.el4939
+Node: Using use-package5303
+Node: Spacemacs Installation5829
+Node: Doom Emacs Installation6677
+Node: Configuration7089
+Node: Setting Up Instapaper7498
+Node: Configuring Authentication7881
+Node: Plain Text Credentials8316
+Node: Encrypted Credentials8728
+Node: Testing Authentication9316
+Node: Usage9645
+Node: Adding URLs at Point10012
+Node: Adding URLs Interactively10416
+Node: Keybindings10826
+Node: Integrations11316
+Node: Elfeed Integration11569
+Node: Troubleshooting12700
+Node: Authentication Issues13100
+Node: Credential Issues13677
+Node: GPG Issues14080
+Node: Network Issues14491
+Node: API Reference14922
+Node: Interactive Functions15224
+Node: Internal Functions17147
+Node: Variables17936
+Node: Index18270
 
 End Tag Table
 
