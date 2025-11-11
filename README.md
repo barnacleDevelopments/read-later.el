@@ -9,6 +9,9 @@ Send URLs to Instapaper directly from Emacs with ease.
 - Secure credential management using auth-source
 - Interactive URL input or add URLs at point
 
+## Upcoming Features
+- Full API Integration using oauth 1.0
+
 ## Prerequisites
 
 - Emacs 24.3 or higher
