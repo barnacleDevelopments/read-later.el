@@ -36,6 +36,7 @@
 
 (require 'url)
 (require 'auth-source)
+(require 'oauth)
 
 ;;; Internal constants
 
@@ -44,6 +45,12 @@
 
 (defconst read-later-api--base-url "https://www.instapaper.com"
   "The official Instapaper URL.")
+
+;;; Internal variables
+
+(defvar read-later-api--oauth-access-token nil
+  "Cached OAuth access token for the current session.
+Set by `read-later-api-oauth-setup'.")
 
 ;;; Endpoint registry
 
@@ -89,6 +96,19 @@
 Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
   (let ((auth-info (car (auth-source-search :host read-later-api--host
                                             :require '(:user :secret)))))
+    (message "result is: %S" auth-info)
+    (when auth-info
+      (cons (plist-get auth-info :user)
+            (funcall (plist-get auth-info :secret))))))
+
+(defun read-later-api--get-oauth-consumer-credentials ()
+  "Retrieve OAuth consumer key and secret from auth-source.
+Returns a cons cell (CONSUMER-KEY . CONSUMER-SECRET) or nil if not found.
+Looks for host 'instapaper-oauth'."
+  (let ((auth-info (car (auth-source-search :host "instapaper-oauth"
+                                            :require '(:user :secret)))))
+
+    (message "result is: %S" auth-info)
     (when auth-info
       (cons (plist-get auth-info :user)
             (funcall (plist-get auth-info :secret))))))
@@ -190,51 +210,114 @@ Example usage:
                       (when callback
                         (funcall callback result)))))))
 
+;;;###autoload
+(defun read-later-api-oauth-setup ()
+  "Set up OAuth authentication for the Instapaper Full API.
+Retrieves consumer credentials from 'instapaper-oauth' and user credentials
+from 'www.instapaper.com' in auth-source, then uses xAuth to obtain an
+access token. The token is cached in `read-later-api--oauth-access-token'.
+
+Returns the oauth-access-token object on success, or nil on failure."
+  (interactive)
+  (let* ((consumer-creds (read-later-api--get-oauth-consumer-credentials))
+         (user-creds (read-later-api--get-credentials))
+         (consumer-key (car consumer-creds))
+         (consumer-secret (cdr consumer-creds))
+         (username (car user-creds))
+         (password (cdr user-creds)))
+
+    (unless consumer-creds
+      (error "OAuth consumer credentials not found. Please add 'instapaper-oauth' to your authinfo file"))
+
+    (unless user-creds
+      (error "User credentials not found. Please add 'www.instapaper.com' to your authinfo file"))
+
+    (message "Obtaining OAuth access token for %s..." username)
+
+    ;; Create OAuth request for xAuth access token
+    (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
+           (req (oauth-make-request access-token-url consumer-key))
+           (xauth-params `(("x_auth_mode" . "client_auth")
+                           ("x_auth_username" . ,username)
+                           ("x_auth_password" . ,password))))
+
+      ;; Set HTTP method to POST (required by Instapaper)
+      (setf (oauth-request-http-method req) "POST")
+
+      ;; Add xAuth parameters to the request
+      (setf (oauth-request-params req)
+            (append (oauth-request-params req) xauth-params))
+
+      ;; Sign the request with HMAC-SHA1
+      (oauth-sign-request-hmac-sha1 req consumer-secret)
+
+      (message "making request: %S" req)
+      ;; Fetch the access token
+      (condition-case err
+          (let ((token (oauth-fetch-token req)))
+            (setq read-later-api--oauth-access-token
+                  (make-oauth-access-token
+                   :consumer-key consumer-key
+                   :consumer-secret consumer-secret
+                   :auth-t token))
+            (message "OAuth access token obtained successfully")
+            read-later-api--oauth-access-token)
+        (error
+         (message "Failed to obtain OAuth access token: %s" (error-message-string err))
+         nil)))))
+
 (defun read-later-api-full-request (endpoint &rest args)
   "Make a Full API request to ENDPOINT with ARGS.
-Uses OAuth 1.0 authentication (not yet implemented).
+Uses OAuth 1.0 authentication with HMAC-SHA1 signing.
 
 ENDPOINT is a symbol like 'bookmarks-list, 'folders-add, 'highlights-list, etc.
 
 ARGS is a plist that can contain:
   :params - alist of parameters to send (e.g., '((folder_id . \"123\") (limit . \"25\")))
   :id - optional ID for endpoints that require it (e.g., bookmark ID for highlights)
-  :oauth-token - OAuth access token (required)
-  :oauth-token-secret - OAuth token secret (required)
   :callback - function called with response plist (:success :status-code :message :body)
 
-Example usage (once OAuth is implemented):
+The function automatically uses the cached OAuth token from `read-later-api-oauth-setup'.
+If no token is cached, it will automatically call `read-later-api-oauth-setup' first.
+
+Example usage:
+  ;; First time: setup OAuth (or call interactively: M-x read-later-api-oauth-setup)
+  (read-later-api-oauth-setup)
+
+  ;; Make requests (OAuth setup happens automatically if needed)
   (read-later-api-full-request 'bookmarks-list
-                               :oauth-token \"your-token\"
-                               :oauth-token-secret \"your-secret\"
                                :params '((limit . \"25\"))
                                :callback #'my-handler)
 
   (read-later-api-full-request 'highlights-list
-                               :oauth-token \"your-token\"
-                               :oauth-token-secret \"your-secret\"
                                :id \"bookmark-id\"
                                :callback #'my-handler)"
-  (error "Full API (OAuth) is not yet implemented. Use read-later-api-simple-request for Simple API endpoints.")
-  ;; TODO: Implement OAuth 1.0 authentication
-  ;; (let* ((params (plist-get args :params))
-  ;;        (id (plist-get args :id))
-  ;;        (callback (plist-get args :callback))
-  ;;        (oauth-token (plist-get args :oauth-token))
-  ;;        (oauth-token-secret (plist-get args :oauth-token-secret))
-  ;;        (endpoint-info (alist-get endpoint read-later-api--endpoints))
-  ;;        (method (plist-get endpoint-info :method))
-  ;;        (url-request-method method)
-  ;;        ;; TODO: Generate OAuth 1.0 signature and headers
-  ;;        (url-request-extra-headers '())
-  ;;        (api-url (read-later-api--build-url endpoint params id)))
-  ;;   (url-retrieve api-url
-  ;;                 (lambda (status)
-  ;;                   (let ((result (read-later-api--parse-response status)))
-  ;;                     (kill-buffer (current-buffer))
-  ;;                     (when callback
-  ;;                       (funcall callback result))))))
-  )
+  (let* ((params (plist-get args :params))
+         (id (plist-get args :id))
+         (callback (plist-get args :callback))
+         (endpoint-info (alist-get endpoint read-later-api--endpoints))
+         (method (plist-get endpoint-info :method)))
+
+    ;; Ensure we have an OAuth access token
+    (unless read-later-api--oauth-access-token
+      (message "No OAuth token found. Setting up OAuth...")
+      (unless (read-later-api-oauth-setup)
+        (error "Failed to obtain OAuth access token. Cannot proceed with Full API request")))
+
+    ;; Build the URL (without query parameters - they go in POST body)
+    (let* ((api-url (read-later-api--build-url endpoint nil id))
+           (oauth-post-vars-alist params))
+
+      ;; Use oauth.el's url-retrieve wrapper which handles signing
+      (oauth-url-retrieve
+       read-later-api--oauth-access-token
+       api-url
+       (when callback
+         (lambda (status)
+           (let ((result (read-later-api--parse-response status)))
+             (kill-buffer (current-buffer))
+             (funcall callback result))))
+       nil))))
 
 (provide 'read-later-api)
 
