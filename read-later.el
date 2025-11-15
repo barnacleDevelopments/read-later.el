@@ -6,11 +6,11 @@
 ;; Maintainer: Devin Davis <devindavis@pop-os>
 ;; Created: October 25, 2025
 ;; Modified: November 06, 2025
-;; Version: 1.0.0
+;; Version: 2.0.0
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "29.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -37,82 +37,31 @@
 ;; SOFTWARE.
 
 ;;; Code:
-(require 'url)
-(require 'url-auth)
+(require 'read-later-api)
 
-(setq read-later-api-url "https://www.instapaper.com/api/add")
 (setq url-debug t)
 
 ;;;###autoload
 (defun read-later-add-url (url)
   "Add URL to Instapaper account asynchronously."
-  (condition-case err
-      (let* ((auth-info (car (auth-source-search :host "www.instapaper.com"
-                                                 :require '(:user :secret))))
-             (username (plist-get auth-info :user))
-             (password (funcall (plist-get auth-info :secret)))
-             (url-request-method "GET")
-             (url-request-extra-headers
-              `(("Authorization" . ,(concat "Basic "
-                                            (base64-encode-string
-                                             (concat username ":" password)
-                                             t)))))
-             (api-url (format "https://www.instapaper.com/api/add?url=%s"
-                              (url-hexify-string url))))
-        (url-retrieve api-url
-                      (lambda (status)
-                        (let ((error-status (plist-get status :error)))
-                          (if error-status
-                              (message "Error adding to Instapaper: %s" error-status)
-                            (goto-char (point-min))
-                            (if (re-search-forward "^HTTP/[0-9.]+ \\([0-9]+\\)" nil t)
-                                (let ((http-status (match-string 1)))
-                                  (cond
-                                   ((string= http-status "201")
-                                    (message "✓ Added to Instapaper: %s" url))
-                                   ((string= http-status "400")
-                                    (message "✗ Bad request - check URL format"))
-                                   ((string= http-status "403")
-                                    (message "✗ Authentication failed"))
-                                   (t
-                                    (message "✗ Error %s adding URL" http-status))))
-                              (message "✗ Could not parse response"))))
-                        (kill-buffer (current-buffer))))
-        (message "Adding to Instapaper..."))
-    (error
-     (message "Error adding to Instapaper: %s" err)
-     nil)))
+  (message "Adding to Instapaper...")
+  (read-later-api-simple-request 'simple-add
+                                 :params `((url . ,url))
+                                 :callback (lambda (result)
+                                             (if (plist-get result :success)
+                                                 (message "✓ Added to Instapaper: %s" url)
+                                               (message "✗ %s" (plist-get result :message))))))
 
 ;;;###autoload
 (defun read-later-test-auth ()
   "Test Instapaper authentication asynchronously."
   (interactive)
-  (require 'url)
-  (require 'auth-source)
-  (let* ((auth-info (car (auth-source-search :host "www.instapaper.com"
-                                             :require '(:user :secret))))
-         (username (plist-get auth-info :user))
-         (password (funcall (plist-get auth-info :secret)))
-         (url-request-method "GET")
-         (url-request-extra-headers
-          `(("Authorization" . ,(concat "Basic "
-                                        (base64-encode-string
-                                         (concat username ":" password)
-                                         t))))))
-    (url-retrieve "https://www.instapaper.com/api/authenticate"
-                  (lambda (status)
-                    (let ((error-status (plist-get status :error)))
-                      (if error-status
-                          (message "✗ Authentication error: %s" error-status)
-                        (goto-char (point-min))
-                        (if (re-search-forward "^HTTP/[0-9.]+ \\([0-9]+\\)" nil t)
-                            (let ((http-status (match-string 1)))
-                              (if (string= http-status "200")
-                                  (message "✓ Authentication successful!")
-                                (message "✗ Authentication failed with status %s" http-status)))
-                          (message "✗ Could not parse authentication response"))))
-                    (kill-buffer (current-buffer))))
-    (message "Testing authentication...")))
+  (message "Testing authentication...")
+  (read-later-api-simple-request 'simple-authenticate
+                                 :callback (lambda (result)
+                                             (if (plist-get result :success)
+                                                 (message "✓ Authentication successful!")
+                                               (message "✗ %s" (plist-get result :message))))))
 
 ;;;###autoload
 (defun read-later-add-url-at-point()
