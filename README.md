@@ -14,8 +14,9 @@ Send URLs to Instapaper directly from Emacs with ease.
 
 ## Prerequisites
 
-- Emacs 24.3 or higher
+- Emacs 29.1 or higher
 - An Instapaper account (see setup below)
+- Instapaper OAuth Consumer Key and Secret (required for Full API access - contact Instapaper support to obtain these)
 
 ## Installation
 
@@ -93,16 +94,20 @@ Run `doom sync` after adding the package, then restart Emacs.
 3. Enter your email address and choose a password
 4. Verify your email address
 
+#### a. Email Instapaper to get Full API Credentials
+To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them by contacting Instapaper support.
+
 ### 2. Configure Authentication in Emacs
 
 read-later uses Emacs' built-in `auth-source` for secure credential storage. You'll need to add your Instapaper credentials to one of these files:
 
 #### Option 1: Using ~/.authinfo (Plain Text)
 
-Add this line to `~/.authinfo`:
+Add these lines to `~/.authinfo`:
 
 ```
 machine www.instapaper.com login your-email@example.com password your-password
+machine instapaper-oauth login your-consumer-key password your-consumer-secret
 ```
 
 **Note:** This file stores credentials in plain text. Make sure it has restrictive permissions:
@@ -111,14 +116,17 @@ machine www.instapaper.com login your-email@example.com password your-password
 chmod 600 ~/.authinfo
 ```
 
+The first line contains your Instapaper account credentials, and the second line contains your OAuth consumer key and secret (obtained by contacting Instapaper).
+
 #### Option 2: Using ~/.authinfo.gpg (Encrypted - Recommended)
 
-For better security, use an encrypted file:
+For better security, and to avoid your account getting banned if your credentials are used to abuse the API, use an encrypted file:
 
 1. Create or edit `~/.authinfo.gpg`
-2. Add the same line as above:
+2. Add the same lines as above:
    ```
    machine www.instapaper.com login your-email@example.com password your-password
+   machine instapaper-oauth login your-consumer-key password your-consumer-secret
    ```
 3. Save the file (Emacs will prompt you to encrypt it with GPG)
 
@@ -144,13 +152,21 @@ Instapapier should now be able to access your password-store credentials.
 
 ### 3. Test Your Configuration
 
-Run this command in Emacs to verify your credentials work:
+Run these commands in Emacs to verify your credentials work:
 
+**Test your Instapaper account credentials:**
 ```elisp
 M-x read-later-test-auth
 ```
 
-You should see "✓ Authentication successful!" in the minibuffer.
+**Test your OAuth credentials:**
+```elisp
+M-x read-later-api-oauth-setup
+```
+
+You should see "✓ Authentication successful!" in the minibuffer for both tests.
+
+
 
 ## Usage
 
@@ -279,8 +295,9 @@ If you have trouble with `.authinfo.gpg`:
 
 ## API Documentation
 
-This package uses the Instapaper Simple API. For more information, see:
-[https://www.instapaper.com/api/simple](https://www.instapaper.com/api/simple)
+This package uses both the Instapaper Simple API and Full API (with OAuth). For more information, see:
+- Simple API: [https://www.instapaper.com/api/simple](https://www.instapaper.com/api/simple)
+- Full API: [https://www.instapaper.com/api/full](https://www.instapaper.com/api/full)
 
 ## License
 
