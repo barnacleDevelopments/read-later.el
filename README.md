@@ -160,13 +160,13 @@ M-x read-later-test-auth
 ```
 
 **Test your OAuth credentials:**
+This function gets called every time you make a request using the full-api to give you a fresh access token if needed. 
+
 ```elisp
 M-x read-later-api-oauth-setup
 ```
 
-You should see "✓ Authentication successful!" in the minibuffer for both tests.
-
-
+You should see success messages in your minibuffer.
 
 ## Usage
 
