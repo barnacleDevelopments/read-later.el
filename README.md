@@ -9,8 +9,8 @@ Send URLs to Instapaper directly from Emacs with ease.
 - Secure credential management using auth-source
 - Interactive URL input or add URLs at point
 
-## Upcoming Features
-- Full API Integration using oauth 1.0
+## Full API Status
+The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
 
 ## Prerequisites
 
@@ -94,8 +94,26 @@ Run `doom sync` after adding the package, then restart Emacs.
 3. Enter your email address and choose a password
 4. Verify your email address
 
-#### a. Email Instapaper to get Full API Credentials
-To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them by contacting Instapaper support.
+#### a. Request Full API Credentials from Instapaper
+To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them.
+
+Request your OAuth consumer token here: [https://www.instapaper.com/main/request_oauth_consumer_token](https://www.instapaper.com/main/request_oauth_consumer_token)
+
+**Example request message:**
+```
+Hi Instapaper team,
+
+I'm using the read-later.el package for Emacs (https://github.com/barnacleDevelopments/read-later.el)
+and would like to request OAuth consumer credentials to access the Full API.
+
+This will allow me to use the package's expanded functionality for managing my Instapaper bookmarks
+directly from my editor.
+
+Thank you for providing such a great service!
+
+Best regards,
+[Your Name]
+```
 
 ### 2. Configure Authentication in Emacs
 
