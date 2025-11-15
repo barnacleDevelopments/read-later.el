@@ -6,7 +6,7 @@
 ;; Maintainer: Devin Davis <devindavis@pop-os>
 ;; Created: October 25, 2025
 ;; Modified: November 06, 2025
-;; Version: 2.0.0
+;; Version: 2.1.0
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
