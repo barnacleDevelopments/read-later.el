@@ -244,27 +244,27 @@ Returns the oauth-access-token object on success, or nil on failure."
       ;; Set HTTP method to POST (required by Instapaper)
       (setf (oauth-request-http-method req) "POST")
 
-      ;; Add xAuth parameters to the request
+      ;; Add xAuth parameters to the request params for signature calculation
       (setf (oauth-request-params req)
             (append (oauth-request-params req) xauth-params))
 
       ;; Sign the request with HMAC-SHA1
       (oauth-sign-request-hmac-sha1 req consumer-secret)
 
-      (message "making request: %S" req)
-      ;; Fetch the access token
-      (condition-case err
-          (let ((token (oauth-fetch-token req)))
-            (setq read-later-api--oauth-access-token
-                  (make-oauth-access-token
-                   :consumer-key consumer-key
-                   :consumer-secret consumer-secret
-                   :auth-t token))
-            (message "OAuth access token obtained successfully")
-            read-later-api--oauth-access-token)
-        (error
-         (message "Failed to obtain OAuth access token: %s" (error-message-string err))
-         nil)))))
+      ;; Fetch the access token with xAuth params in POST body
+      (let ((oauth-post-vars-alist xauth-params))
+        (condition-case err
+            (let ((token (oauth-fetch-token req)))
+              (setq read-later-api--oauth-access-token
+                    (make-oauth-access-token
+                     :consumer-key consumer-key
+                     :consumer-secret consumer-secret
+                     :auth-t token))
+              (message "OAuth access token obtained successfully")
+              read-later-api--oauth-access-token)
+          (error
+           (message "Failed to obtain OAuth access token: %s" (error-message-string err))
+           nil))))))
 
 (defun read-later-api-full-request (endpoint &rest args)
   "Make a Full API request to ENDPOINT with ARGS.
@@ -306,7 +306,8 @@ Example usage:
 
     ;; Build the URL (without query parameters - they go in POST body)
     (let* ((api-url (read-later-api--build-url endpoint nil id))
-           (oauth-post-vars-alist params))
+           (oauth-post-vars-alist params)
+           (url-request-method method))
 
       ;; Use oauth.el's url-retrieve wrapper which handles signing
       (oauth-url-retrieve
