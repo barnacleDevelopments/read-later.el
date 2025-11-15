@@ -9,13 +9,14 @@ Send URLs to Instapaper directly from Emacs with ease.
 - Secure credential management using auth-source
 - Interactive URL input or add URLs at point
 
-## Upcoming Features
-- Full API Integration using oauth 1.0
+## Full API Status
+The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
 
 ## Prerequisites
 
-- Emacs 24.3 or higher
+- Emacs 29.1 or higher
 - An Instapaper account (see setup below)
+- Instapaper OAuth Consumer Key and Secret (required for Full API access - contact Instapaper support to obtain these)
 
 ## Installation
 
@@ -93,16 +94,38 @@ Run `doom sync` after adding the package, then restart Emacs.
 3. Enter your email address and choose a password
 4. Verify your email address
 
+#### a. Request Full API Credentials from Instapaper
+To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them.
+
+Request your OAuth consumer token here: [https://www.instapaper.com/main/request_oauth_consumer_token](https://www.instapaper.com/main/request_oauth_consumer_token)
+
+**Example request message:**
+```
+Hi Instapaper team,
+
+I'm using the read-later.el package for Emacs (https://github.com/barnacleDevelopments/read-later.el)
+and would like to request OAuth consumer credentials to access the Full API.
+
+This will allow me to use the package's expanded functionality for managing my Instapaper bookmarks
+directly from my editor.
+
+Thank you for providing such a great service!
+
+Best regards,
+[Your Name]
+```
+
 ### 2. Configure Authentication in Emacs
 
 read-later uses Emacs' built-in `auth-source` for secure credential storage. You'll need to add your Instapaper credentials to one of these files:
 
 #### Option 1: Using ~/.authinfo (Plain Text)
 
-Add this line to `~/.authinfo`:
+Add these lines to `~/.authinfo`:
 
 ```
 machine www.instapaper.com login your-email@example.com password your-password
+machine instapaper-oauth login your-consumer-key password your-consumer-secret
 ```
 
 **Note:** This file stores credentials in plain text. Make sure it has restrictive permissions:
@@ -111,14 +134,17 @@ machine www.instapaper.com login your-email@example.com password your-password
 chmod 600 ~/.authinfo
 ```
 
+The first line contains your Instapaper account credentials, and the second line contains your OAuth consumer key and secret (obtained by contacting Instapaper).
+
 #### Option 2: Using ~/.authinfo.gpg (Encrypted - Recommended)
 
-For better security, use an encrypted file:
+For better security, and to avoid your account getting banned if your credentials are used to abuse the API, use an encrypted file:
 
 1. Create or edit `~/.authinfo.gpg`
-2. Add the same line as above:
+2. Add the same lines as above:
    ```
    machine www.instapaper.com login your-email@example.com password your-password
+   machine instapaper-oauth login your-consumer-key password your-consumer-secret
    ```
 3. Save the file (Emacs will prompt you to encrypt it with GPG)
 
@@ -144,13 +170,21 @@ Instapapier should now be able to access your password-store credentials.
 
 ### 3. Test Your Configuration
 
-Run this command in Emacs to verify your credentials work:
+Run these commands in Emacs to verify your credentials work:
 
+**Test your Instapaper account credentials:**
 ```elisp
 M-x read-later-test-auth
 ```
 
-You should see "✓ Authentication successful!" in the minibuffer.
+**Test your OAuth credentials:**
+This function gets called every time you make a request using the full-api to give you a fresh access token if needed. 
+
+```elisp
+M-x read-later-api-oauth-setup
+```
+
+You should see success messages in your minibuffer.
 
 ## Usage
 
@@ -279,8 +313,9 @@ If you have trouble with `.authinfo.gpg`:
 
 ## API Documentation
 
-This package uses the Instapaper Simple API. For more information, see:
-[https://www.instapaper.com/api/simple](https://www.instapaper.com/api/simple)
+This package uses both the Instapaper Simple API and Full API (with OAuth). For more information, see:
+- Simple API: [https://www.instapaper.com/api/simple](https://www.instapaper.com/api/simple)
+- Full API: [https://www.instapaper.com/api/full](https://www.instapaper.com/api/full)
 
 ## License
 
