@@ -51,6 +51,9 @@
 (defvar-local read-later--vtable nil
   "The vtable object for the bookmarks list.")
 
+(defvar-local read-later--refresh-prompted nil
+  "Tracks if refresh is required.")
+
 ;;;###autoload
 (defun read-later-add-url (url)
   "Add URL to Instapaper account asynchronously."
@@ -93,6 +96,15 @@
   (interactive "sArticle URL:")
   (read-later-add-url url))
 
+(defun read-later--filter-api-data-type (json &rest args)
+  "Parse data type specfified in ARGS from JSON."
+  (let* ((data (json-read-from-string json))
+         (type (plist-get args :type)))
+    (cl-remove-if-not
+     (lambda (item)
+       (equal (alist-get 'type item) type))
+     (append data nil))))
+
 ;;; Bookmarks List Functions
 
 (defun read-later--parse-bookmark (bookmark-data)
@@ -110,19 +122,10 @@
       (format "%d%%" (round (* 100 progress)))
     "0%"))
 
-(defun read-later--create-bookmarks-buffer (bookmarks-json)
+(defun read-later--create-bookmarks-buffer (&optional bookmarks-json)
   "Create and populate the bookmarks list buffer with BOOKMARKS-JSON."
-  (message "DEBUG: Received JSON: %s" (substring bookmarks-json 0 (min 200 (length bookmarks-json))))
-  (let* ((data (json-read-from-string bookmarks-json))
-         ;; Data is a vector of objects, filter for type="bookmark"
-         (bookmarks (cl-remove-if-not
-                     (lambda (item)
-                       (equal (alist-get 'type item) "bookmark"))
-                     (append data nil)))
+  (let* ((bookmarks (read-later--filter-api-data-type bookmarks-json :type "bookmark" ))
          (parsed-bookmarks (mapcar #'read-later--parse-bookmark bookmarks)))
-
-    (message "DEBUG: Parsed %d bookmarks" (length parsed-bookmarks))
-    (message "DEBUG: First bookmark: %S" (car parsed-bookmarks))
 
     (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
       (let ((inhibit-read-only t))
@@ -131,10 +134,9 @@
 
         (setq read-later--bookmarks-data parsed-bookmarks)
 
-        ;; Create vtable
         (setq read-later--vtable
               (make-vtable
-               :columns '((:name "Title" :width 50)
+               :columns '((:name "Title" :width 100)
                           (:name "Progress" :width 10 :align right)
                           (:name "Description" :width 60))
                :objects parsed-bookmarks
@@ -143,9 +145,8 @@
                            ("Title" (plist-get bookmark :title))
                            ("Progress" (read-later--format-progress
                                         (plist-get bookmark :progress)))
-                           ("Description" (plist-get bookmark :description))))))
-
-        (message "DEBUG: Buffer contents length: %d" (buffer-size))
+                           ("Description" (plist-get bookmark :description))))
+               :ellipsis t))
         (goto-char (point-min)))
       (switch-to-buffer (current-buffer)))))
 
@@ -186,6 +187,12 @@
                                         (plist-get result :body)))
                                    (message "✗ Failed to fetch bookmarks: %s"
                                             (plist-get result :message))))))
+
+
+(defun read-later--refresh-bookmarks-buffer ()
+  "Refreshes the bookmark buffer."
+  (read-later--create-bookmarks-buffer))
+
 
 (provide 'read-later)
 
