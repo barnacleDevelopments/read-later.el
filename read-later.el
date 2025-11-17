@@ -54,6 +54,14 @@
 (defvar-local read-later--refresh-prompted nil
   "Tracks if refresh is required.")
 
+(defvar read-later-bookmarks-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'read-later-open-bookmark-at-point)
+    (define-key map (kbd "g") #'read-later--refresh-bookmarks)
+    (define-key map (kbd "q") #'quit-window)
+    map)
+  "Keymap for `read-later-bookmarks-mode'.")
+
 ;;;###autoload
 (defun read-later-add-url (url)
   "Add URL to Instapaper account asynchronously."
@@ -105,7 +113,25 @@
        (equal (alist-get 'type item) type))
      (append data nil))))
 
+(defun read-later--handle-request-body(result &rest args)
+  "Handles request RESULT from Instapaper takes ARGS of :type (i.e \='bookmarks')."
+  (if (plist-get result :success)
+      (progn
+        
+        (let* ((type (plist-get args :type))
+               (body (plist-get result :body))
+               (json (read-later--filter-api-data-type body :type type)))
+          (message "✓ %S retrieved" type)
+          (mapcar #'read-later--parse-bookmark json)))
+    (message "✗ Failed to fetch resource: %s"
+             (plist-get result :message))))
+
 ;;; Bookmarks List Functions
+(define-derived-mode read-later-bookmarks-mode special-mode "Read-Later-Bookmarks"
+  "Major mode for displaying Instapaper bookmarks.
+
+\\{read-later-bookmarks-mode-map}"
+  (setq buffer-read-only t))
 
 (defun read-later--parse-bookmark (bookmark-data)
   "Parse BOOKMARK-DATA from JSON into a plist for display."
@@ -136,7 +162,8 @@
              :columns '((:name "Title" :width 100)
                         (:name "Progress" :width 10 :align right)
                         (:name "Description" :width 60))
-             :objects-function #'read-later--refresh-bookmarks ; TODO you are here trying to figure out how to refresh table with data
+             :objects default-bookmarks
+             :objects-function (lambda () read-later--bookmarks-data)
              :getter (lambda (bookmark column vtable)
                        (pcase (vtable-column vtable column)
                          ("Title" (plist-get bookmark :title))
@@ -146,6 +173,15 @@
              :ellipsis t))
       (goto-char (point-min)))))
 
+(defun read-later--refresh-bookmarks ()
+  "Refreshes the bookmark buffer."
+  (interactive)
+  (message "Refreshing bookmarks...")
+  (read-later-api-full-request 'bookmarks-list
+                               :callback
+                               (lambda (result)
+                                 (setq read-later--bookmarks-data (read-later--handle-request-body result :type "bookmark")))))
+
 (defun read-later-open-bookmark-at-point ()
   "Open the bookmark URL at point in browser."
   (interactive)
@@ -154,49 +190,13 @@
     (browse-url url)
     (message "Opening: %s" url)))
 
-(defvar read-later-bookmarks-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "RET") #'read-later-open-bookmark-at-point)
-    (define-key map (kbd "g") #'read-later-view-bookmarks)
-    (define-key map (kbd "q") #'quit-window)
-    map)
-  "Keymap for `read-later-bookmarks-mode'.")
-
-(define-derived-mode read-later-bookmarks-mode special-mode "Read-Later-Bookmarks"
-  "Major mode for displaying Instapaper bookmarks.
-
-\\{read-later-bookmarks-mode-map}"
-  (setq buffer-read-only t))
-
-(defun read-later--handle-request-body(result &rest args)
-  "Handles request RESULT from Instapaper takes ARGS of :type (i.e \='bookmarks')."
-  (if (plist-get result :success)
-      (progn
-        
-        (let* ((type (plist-get args :type))
-               (body (plist-get result :body))
-               (json (read-later--filter-api-data-type body :type type)))
-          (message "✓ %S retrieved" type)
-          (mapcar #'read-later--parse-bookmark json)))
-    (message "✗ Failed to fetch resource: %s"
-             (plist-get result :message))))
-
 ;;;###autoload
 (defun read-later-view-bookmarks ()
   "Fetch and display Instapaper bookmarks in a vtable."
   (interactive)
   (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
-    (unless bookmarks-buffer (read-later--create-bookmarks-buffer nil))
+    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Instapaper Bookmarks*")))
-
-(defun read-later--refresh-bookmarks ()
-  "Refreshes the bookmark buffer."
-  (interactive)
-  (read-later-api-full-request 'bookmarks-list
-                               :callback
-                               (lambda (result)
-                                 (setq read-later--bookmarks-data (read-later--handle-request-body result :type "bookmark")))))
-
 
 (provide 'read-later)
 
