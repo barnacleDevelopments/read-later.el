@@ -38,29 +38,10 @@
 
 ;;; Code:
 (require 'read-later-api)
-(require 'vtable)
+(require 'read-later-bookmarks)
 (require 'json)
 
 (setq url-debug t)
-
-;;; Internal variables
-
-(defvar-local read-later--bookmarks-data nil
-  "Cached bookmarks data for the current buffer.")
-
-(defvar-local read-later--vtable nil
-  "The vtable object for the bookmarks list.")
-
-(defvar-local read-later--refresh-prompted nil
-  "Tracks if refresh is required.")
-
-(defvar read-later-bookmarks-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "RET") #'read-later-open-bookmark-at-point)
-    (define-key map (kbd "g") #'read-later--refresh-bookmarks)
-    (define-key map (kbd "q") #'quit-window)
-    map)
-  "Keymap for `read-later-bookmarks-mode'.")
 
 ;;;###autoload
 (defun read-later-add-url (url)
@@ -104,91 +85,26 @@
   (interactive "sArticle URL:")
   (read-later-add-url url))
 
-(defun read-later--filter-api-data-type (json &rest args)
-  "Parse data type specfified in ARGS from JSON."
-  (let* ((data (json-read-from-string json))
-         (type (plist-get args :type)))
-    (cl-remove-if-not
-     (lambda (item)
-       (equal (alist-get 'type item) type))
-     (append data nil))))
-
-(defun read-later--handle-request-body(result &rest args)
-  "Handles request RESULT from Instapaper takes ARGS of :type (i.e \='bookmarks')."
-  (if (plist-get result :success)
-      (progn
-        
-        (let* ((type (plist-get args :type))
-               (body (plist-get result :body))
-               (json (read-later--filter-api-data-type body :type type)))
-          (message "✓ %S retrieved" type)
-          (mapcar #'read-later--parse-bookmark json)))
-    (message "✗ Failed to fetch resource: %s"
-             (plist-get result :message))))
-
 ;;; Bookmarks List Functions
-(define-derived-mode read-later-bookmarks-mode special-mode "Read-Later-Bookmarks"
-  "Major mode for displaying Instapaper bookmarks.
 
-\\{read-later-bookmarks-mode-map}"
-  (setq buffer-read-only t))
-
-(defun read-later--parse-bookmark (bookmark-data)
-  "Parse BOOKMARK-DATA from JSON into a plist for display."
-  (list :bookmark-id (alist-get 'bookmark_id bookmark-data)
-        :title (or (alist-get 'title bookmark-data) "Untitled")
-        :url (alist-get 'url bookmark-data)
-        :description (or (alist-get 'description bookmark-data) "")
-        :progress (or (alist-get 'progress bookmark-data) 0.0)
-        :time (alist-get 'time bookmark-data)))
-
-(defun read-later--format-progress (progress)
-  "Format PROGRESS (0.0-1.0) as a percentage string."
-  (if progress
-      (format "%d%%" (round (* 100 progress)))
-    "0%"))
-
-(defun read-later--create-bookmarks-buffer (&optional default-bookmarks)
-  "Create and populate the bookmarks list buffer with DEFAULT-BOOKMARKS plist."
-  (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
-    (let ((inhibit-read-only t))
-      (erase-buffer)
-      (read-later-bookmarks-mode)
-
-      (setq read-later--bookmarks-data default-bookmarks)
-
-      (setq read-later--vtable
-            (make-vtable
-             :columns '((:name "Title" :width 100)
-                        (:name "Progress" :width 10 :align right)
-                        (:name "Description" :width 60))
-             :objects default-bookmarks
-             :objects-function (lambda () read-later--bookmarks-data)
-             :getter (lambda (bookmark column vtable)
-                       (pcase (vtable-column vtable column)
-                         ("Title" (plist-get bookmark :title))
-                         ("Progress" (read-later--format-progress
-                                      (plist-get bookmark :progress)))
-                         ("Description" (plist-get bookmark :description))))
-             :ellipsis t))
-      (goto-char (point-min)))))
-
-(defun read-later--refresh-bookmarks ()
+(defun read-later-refresh-bookmarks ()
   "Refreshes the bookmark buffer."
   (interactive)
   (message "Refreshing bookmarks...")
   (read-later-api-full-request 'bookmarks-list
                                :callback
                                (lambda (result)
-                                 (setq read-later--bookmarks-data (read-later--handle-request-body result :type "bookmark")))))
-
-(defun read-later-open-bookmark-at-point ()
-  "Open the bookmark URL at point in browser."
-  (interactive)
-  (when-let* ((bookmark (vtable-current-object))
-              (url (plist-get bookmark :url)))
-    (browse-url url)
-    (message "Opening: %s" url)))
+                                 (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                   (with-current-buffer "*Instapaper Bookmarks*"
+                                     (setq read-later--bookmarks-data bookmarks)
+                                     (setq tabulated-list-entries
+                                           (mapcar (lambda (bookmark)
+                                                     (list (plist-get bookmark :bookmark-id)
+                                                           (vector (plist-get bookmark :title)
+                                                                   (read-later--format-progress (plist-get bookmark :progress)))))
+                                                   bookmarks))
+                                     (tabulated-list-print t)
+                                     (message "✓ Bookmarks refreshed"))))))
 
 ;;;###autoload
 (defun read-later-view-bookmarks ()
