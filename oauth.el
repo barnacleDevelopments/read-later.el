@@ -197,15 +197,26 @@ oauth headers."
               (oauth-access-token-auth-t access-token))))
     (setf (oauth-request-http-method req) (or url-request-method "GET"))
     (when oauth-post-vars-alist
+      (message "Adding POST vars to request params: %S" oauth-post-vars-alist)
       (setf (oauth-request-params req)
             (append (oauth-request-params req) oauth-post-vars-alist)))
     (oauth-sign-request-hmac-sha1
      req (oauth-access-token-consumer-secret access-token))
-    (let ((url-request-extra-headers (if url-request-extra-headers
-                                         (append url-request-extra-headers
-                                                 (oauth-request-to-header req))
-                                       (oauth-request-to-header req)))
-          (url-request-method (oauth-request-http-method req)))
+    (message "Signature base string: %s" (oauth-build-signature-basestring-hmac-sha1 req))
+    (message "Full request params: %S" (oauth-request-params req))
+    (let* ((url-request-extra-headers (if url-request-extra-headers
+                                          (append url-request-extra-headers
+                                                  (oauth-request-to-header req))
+                                        (oauth-request-to-header req)))
+           (url-request-method (oauth-request-http-method req))
+           (url-request-data (when oauth-post-vars-alist
+                               (mapconcat (lambda (pair)
+                                            (concat (url-hexify-string (car pair)) "="
+                                                    (url-hexify-string (cdr pair))))
+                                          oauth-post-vars-alist
+                                          "&"))))
+      (when url-request-data
+        (message "URL request data: %s" url-request-data))
       (cond
        (async-callback (url-retrieve (oauth-request-url req)
                                      async-callback cb-data))
@@ -396,10 +407,19 @@ can be fed to curl"
                            (lambda (pair)
                              (list
                               "-d"
-                              (concat (car pair) "="
+                              (concat (oauth-hexify-string (car pair)) "="
                                       (oauth-hexify-string (cdr pair)))))
                            oauth-post-vars-alist)))
                      ,@(oauth-headers-to-curl url-request-extra-headers))))
+    ;; Log the complete POST body being sent
+    (when oauth-post-vars-alist
+      (message "OAuth POST body (curl): %s"
+               (mapconcat (lambda (pair)
+                            (concat (oauth-hexify-string (car pair)) "="
+                                    (oauth-hexify-string (cdr pair))))
+                          oauth-post-vars-alist
+                          "&")))
+    (message "Full curl command args: %S" curl-args)
     (apply 'call-process "curl" nil t nil curl-args))
   (url-mark-buffer-as-dead (current-buffer))
   (current-buffer))
