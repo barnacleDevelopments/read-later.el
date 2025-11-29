@@ -38,6 +38,8 @@
 
 ;;; Code:
 (require 'read-later-api)
+(require 'read-later-bookmarks)
+(require 'json)
 
 (setq url-debug t)
 
@@ -82,6 +84,37 @@
   "Add URL interactively."
   (interactive "sArticle URL:")
   (read-later-add-url url))
+
+;;; Bookmarks List Functions
+
+(defun read-later-refresh-bookmarks ()
+  "Refreshes the bookmark buffer."
+  (interactive)
+  (message "Refreshing bookmarks...")
+  (read-later-api-full-request 'bookmarks-list
+                               :callback
+                               (lambda (result)
+                                 (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                   (with-current-buffer "*Instapaper Bookmarks*"
+                                     (setq read-later--bookmarks-data bookmarks)
+                                     (setq tabulated-list-entries
+                                           (mapcar (lambda (bookmark)
+                                                     (list (plist-get bookmark :bookmark_id)
+                                                           (vector (or (plist-get bookmark :title) "")
+                                                                   (read-later--format-progress (plist-get bookmark :progress))
+                                                                   (read-later--format-tags (plist-get bookmark :tags))
+                                                                   (or (plist-get bookmark :description) ""))))
+                                                   bookmarks))
+                                     (tabulated-list-print t)
+                                     (message "✓ Bookmarks refreshed"))))))
+
+;;;###autoload
+(defun read-later-view-bookmarks ()
+  "Fetch and display Instapaper bookmarks in a vtable."
+  (interactive)
+  (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
+    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
+    (switch-to-buffer "*Instapaper Bookmarks*")))
 
 (provide 'read-later)
 
