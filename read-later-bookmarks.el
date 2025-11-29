@@ -55,9 +55,13 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
     "0%"))
 
 (defun read-later--format-tags (tags)
-  "Format TAGS (list of tag plists) as a comma-separated display string."
+  "Format TAGS (list of tag plists) as a comma-separated colorized string."
   (if (and tags (listp tags) (> (length tags) 0))
-      (mapconcat (lambda (tag) (plist-get tag :name)) tags ", ")
+      (mapconcat (lambda (tag)
+                   (let ((tag-name (plist-get tag :name)))
+                     (propertize tag-name
+                                 'face '(:foreground "#8be9fd" :weight bold))))
+                 tags "  ")
     ""))
 
 ;;; Bookmarks Mode
@@ -73,7 +77,8 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
   "Major mode for viewing Instapaper bookmarks."
   (setq tabulated-list-format [("Title" 50 t)
                                ("Progress" 10 t)
-                               ("Tags" 30 t)])
+                               ("Tags" 30 t)
+                               ("Description" 100 t)])
   (setq tabulated-list-padding 2)
   (setq tabulated-list-sort-key (cons "Title" nil))
   (tabulated-list-init-header))
@@ -83,13 +88,13 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
   (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
     (read-later-bookmarks-mode)
     (setq read-later--bookmarks-data bookmarks)
-    (message "BOOKMARKS: %S" bookmarks)
     (setq tabulated-list-entries
           (mapcar (lambda (bookmark)
                     (list (plist-get bookmark :bookmark_id)
                           (vector (or (plist-get bookmark :title) "")
                                   (read-later--format-progress (plist-get bookmark :progress))
-                                  (read-later--format-tags (plist-get bookmark :tags)))))
+                                  (read-later--format-tags (plist-get bookmark :tags))
+                                  (or (plist-get bookmark :description) ""))))
                   bookmarks))
     (tabulated-list-print t)
     (current-buffer)))

@@ -94,7 +94,6 @@
   (read-later-api-full-request 'bookmarks-list
                                :callback
                                (lambda (result)
-                                 (message "RESULT: %S" result)
                                  (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                    (with-current-buffer "*Instapaper Bookmarks*"
                                      (setq read-later--bookmarks-data bookmarks)
@@ -103,7 +102,8 @@
                                                      (list (plist-get bookmark :bookmark_id)
                                                            (vector (or (plist-get bookmark :title) "")
                                                                    (read-later--format-progress (plist-get bookmark :progress))
-                                                                   (read-later--format-tags (plist-get bookmark :tags)))))
+                                                                   (read-later--format-tags (plist-get bookmark :tags))
+                                                                   (or (plist-get bookmark :description) ""))))
                                                    bookmarks))
                                      (tabulated-list-print t)
                                      (message "✓ Bookmarks refreshed"))))))
