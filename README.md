@@ -154,18 +154,35 @@ You should see "✓ Authentication successful!" in the minibuffer.
 
 ## Usage
 
+### View Bookmarks
+
+To open the Instapaper bookmarks buffer:
+
+```elisp
+M-x read-later
+```
+
+This opens a tabulated list of your Instapaper bookmarks where you can:
+- Press `RET` to open a bookmark in your browser
+- Press `g` to refresh the list
+- View bookmark titles, reading progress, tags, and descriptions
+
+### Refresh Bookmarks
+
+If you have the bookmarks buffer open, you can refresh it:
+
+```elisp
+M-x read-later-update
+```
+
+Or simply press `g` in the bookmarks buffer.
+
 ### Add URL at Point
 
 Place your cursor on a URL in any buffer and run:
 
 ```elisp
 M-x read-later-add-url-at-point
-```
-
-Suggested keybinding:
-
-```elisp
-(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
 ```
 
 ### Add URL Interactively
@@ -177,12 +194,6 @@ M-x read-later-interactively-add-url
 ```
 
 You'll be prompted to enter the URL in the minibuffer.
-
-Suggested keybinding:
-
-```elisp
-(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
-```
 
 ### Integration with elfeed
 
