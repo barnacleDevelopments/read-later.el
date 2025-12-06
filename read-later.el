@@ -38,6 +38,8 @@
 
 ;;; Code:
 (require 'read-later-api)
+(require 'read-later-bookmarks)
+(require 'json)
 
 (setq url-debug t)
 
@@ -82,6 +84,43 @@
   "Add URL interactively."
   (interactive "sArticle URL:")
   (read-later-add-url url))
+
+;;; Bookmarks List Functions
+(defun read-later--get-resource-ids (resource-list)
+  "Return list of ids of provided RESOURCE-LIST."
+  (mapconcat 'number-to-string (mapcar (lambda (resource)
+                                         (plist-get resource :bookmark_id)) resource-list) ","))
+
+;;;###autoload
+(defun read-later-update ()
+  "Refreshes the bookmark buffer."
+  (interactive)
+  (message "Refreshing bookmarks...")
+  (with-current-buffer "*Instapaper Bookmarks*"
+    (read-later-api-full-request 'bookmarks-list
+                                 :params `(("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))
+                                 :callback
+                                 (lambda (result)
+                                   (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                     (setq read-later--bookmarks-data bookmarks)
+                                     (setq tabulated-list-entries
+                                           (mapcar (lambda (bookmark)
+                                                     (list (plist-get bookmark :bookmark_id)
+                                                           (vector (or (plist-get bookmark :title) "")
+                                                                   (read-later--format-progress (plist-get bookmark :progress))
+                                                                   (read-later--format-tags (plist-get bookmark :tags))
+                                                                   (or (plist-get bookmark :description) ""))))
+                                                   bookmarks))
+                                     (tabulated-list-print t)
+                                     (message "✓ Bookmarks refreshed"))))))
+
+;;;###autoload
+(defun read-later ()
+  "Enter read-later."
+  (interactive)
+  (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
+    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
+    (switch-to-buffer "*Instapaper Bookmarks*")))
 
 (provide 'read-later)
 

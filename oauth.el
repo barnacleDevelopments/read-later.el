@@ -36,6 +36,12 @@
 
 ;; Visit http://oauth.net/core/1.0a for the complete oauth spec.
 
+;; Fixes Applied:
+;; - Fixed POST request parameter encoding: POST parameters are now properly
+;;   URL-encoded in the request body (both for curl and url-retrieve methods).
+;;   Previously, parameters were only included in the OAuth signature but not
+;;   actually sent in the request body, causing POST requests to fail.
+
 ;; Oauth requires the client application to receive user authorization in order
 ;; to access restricted content on behalf of the user. This allows for
 ;; authenticated communication without jeopardizing the user's password.
@@ -87,7 +93,7 @@
 (require 'cl-lib)
 
 (defvar oauth-nonce-function nil
-"Fuction used to generate nonce.
+  "Fuction used to generate nonce.
 
 Use (sasl-unique-id) if available otherwise oauth-internal-make-nonce")
 
@@ -197,15 +203,26 @@ oauth headers."
               (oauth-access-token-auth-t access-token))))
     (setf (oauth-request-http-method req) (or url-request-method "GET"))
     (when oauth-post-vars-alist
+      (message "Adding POST vars to request params: %S" oauth-post-vars-alist)
       (setf (oauth-request-params req)
             (append (oauth-request-params req) oauth-post-vars-alist)))
     (oauth-sign-request-hmac-sha1
      req (oauth-access-token-consumer-secret access-token))
-    (let ((url-request-extra-headers (if url-request-extra-headers
-                                         (append url-request-extra-headers
-                                                 (oauth-request-to-header req))
-                                       (oauth-request-to-header req)))
-          (url-request-method (oauth-request-http-method req)))
+    (message "Signature base string: %s" (oauth-build-signature-basestring-hmac-sha1 req))
+    (message "Full request params: %S" (oauth-request-params req))
+    (let* ((url-request-extra-headers (if url-request-extra-headers
+                                          (append url-request-extra-headers
+                                                  (oauth-request-to-header req))
+                                        (oauth-request-to-header req)))
+           (url-request-method (oauth-request-http-method req))
+           (url-request-data (when oauth-post-vars-alist
+                               (mapconcat (lambda (pair)
+                                            (concat (url-hexify-string (car pair)) "="
+                                                    (url-hexify-string (cdr pair))))
+                                          oauth-post-vars-alist
+                                          "&"))))
+      (when url-request-data
+        (message "URL request data: %s" url-request-data))
       (cond
        (async-callback (url-retrieve (oauth-request-url req)
                                      async-callback cb-data))
@@ -294,9 +311,9 @@ This function is destructive"
 (defun oauth-build-signature-basestring-hmac-sha1 (req)
   "Returns the base string for the hmac-sha1 signing function"
   (let ((base-url (oauth-extract-base-url req))
-         (params (append
-                  (oauth-extract-url-params req)
-                  (copy-sequence (oauth-request-params req)))))
+        (params (append
+                 (oauth-extract-url-params req)
+                 (copy-sequence (oauth-request-params req)))))
     (concat
      (oauth-request-http-method req) "&"
      (oauth-hexify-string base-url) "&"
@@ -361,7 +378,7 @@ headers. Returns the http response buffer.
 This function uses the emacs function `url-retrieve' for the http connection."
   (let ((url-request-extra-headers (oauth-request-to-header req))
         (url-request-method (oauth-request-http-method req)))
-  (url-retrieve-synchronously (oauth-request-url req))))
+    (url-retrieve-synchronously (oauth-request-url req))))
 
 (defun oauth-do-request-curl (req)
   "Make an http request to url using the request object to generate the oauth
@@ -371,7 +388,7 @@ This function dispatches to an external curl process"
 
   (let ((url-request-extra-headers (oauth-request-to-header req))
         (url-request-method (oauth-request-http-method req)))
-  (oauth-curl-retrieve (oauth-request-url req))))
+    (oauth-curl-retrieve (oauth-request-url req))))
 
 (defun oauth-headers-to-curl (headers)
   "Converts header alist (like `url-request-extra-headers') to a string that
@@ -396,10 +413,19 @@ can be fed to curl"
                            (lambda (pair)
                              (list
                               "-d"
-                              (concat (car pair) "="
+                              (concat (oauth-hexify-string (car pair)) "="
                                       (oauth-hexify-string (cdr pair)))))
                            oauth-post-vars-alist)))
                      ,@(oauth-headers-to-curl url-request-extra-headers))))
+    ;; Log the complete POST body being sent
+    (when oauth-post-vars-alist
+      (message "OAuth POST body (curl): %s"
+               (mapconcat (lambda (pair)
+                            (concat (oauth-hexify-string (car pair)) "="
+                                    (oauth-hexify-string (cdr pair))))
+                          oauth-post-vars-alist
+                          "&")))
+    (message "Full curl command args: %S" curl-args)
     (apply 'call-process "curl" nil t nil curl-args))
   (url-mark-buffer-as-dead (current-buffer))
   (current-buffer))
@@ -407,7 +433,12 @@ can be fed to curl"
 (defun oauth-request-to-header (req)
   "Given a requst will return a alist of header pairs. This can
 be consumed by `url-request-extra-headers'."
-  (let ((params (copy-sequence (oauth-request-params req))))
+  (let* ((params (copy-sequence (oauth-request-params req)))
+         ;; Filter to only include oauth_* parameters in Authorization header
+         (oauth-params (cl-remove-if-not
+                        (lambda (pair)
+                          (string-prefix-p "oauth_" (car pair)))
+                        params)))
     (cons
      (cons
       "Authorization"
@@ -417,7 +448,7 @@ be consumed by `url-request-extra-headers'."
                 (format ", %s=\"%s\""
                         (car pair)
                         (oauth-hexify-string (cdr pair))))
-              (sort params
+              (sort oauth-params
                     (lambda (a b) (string< (car a) (car b))))))) '())))
 
 (defconst oauth-unreserved-chars

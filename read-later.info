@@ -292,19 +292,49 @@ File: read-later.info,  Node: Usage,  Next: Integrations,  Prev: Configuration, 
 4 Usage
 *******
 
-Instapapier provides several interactive commands for adding URLs to
-Instapaper.
+Instapapier provides several interactive commands for managing your
+Instapaper bookmarks.
 
 * Menu:
 
+* Viewing Bookmarks::           View and manage your bookmarks
+* Refreshing Bookmarks::        Update the bookmark list
 * Adding URLs at Point::        Save URL under cursor
 * Adding URLs Interactively::   Enter URL manually
-* Keybindings::                 Suggested key configurations
 
 
-File: read-later.info,  Node: Adding URLs at Point,  Next: Adding URLs Interactively,  Up: Usage
+File: read-later.info,  Node: Viewing Bookmarks,  Next: Refreshing Bookmarks,  Up: Usage
 
-4.1 Adding URLs at Point
+4.1 Viewing Bookmarks
+=====================
+
+To open the Instapaper bookmarks buffer:
+
+     M-x read-later
+
+   This opens a tabulated list of your Instapaper bookmarks where you
+can:
+
+   • Press ‘RET’ to open a bookmark in your browser
+   • Press ‘g’ to refresh the list
+   • View bookmark titles, reading progress, tags, and descriptions
+
+
+File: read-later.info,  Node: Refreshing Bookmarks,  Next: Adding URLs at Point,  Prev: Viewing Bookmarks,  Up: Usage
+
+4.2 Refreshing Bookmarks
+========================
+
+If you have the bookmarks buffer open, you can refresh it:
+
+     M-x read-later-update
+
+   Or simply press ‘g’ in the bookmarks buffer.
+
+
+File: read-later.info,  Node: Adding URLs at Point,  Next: Adding URLs Interactively,  Prev: Refreshing Bookmarks,  Up: Usage
+
+4.3 Adding URLs at Point
 ========================
 
 To save a URL located at the cursor position:
@@ -313,14 +343,10 @@ To save a URL located at the cursor position:
 
    The command will detect the URL at point and send it to Instapaper.
 
-   *Suggested keybinding:*
-
-     (global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
-
 
-File: read-later.info,  Node: Adding URLs Interactively,  Next: Keybindings,  Prev: Adding URLs at Point,  Up: Usage
+File: read-later.info,  Node: Adding URLs Interactively,  Prev: Adding URLs at Point,  Up: Usage
 
-4.2 Adding URLs Interactively
+4.4 Adding URLs Interactively
 =============================
 
 To manually enter a URL:
@@ -328,27 +354,6 @@ To manually enter a URL:
      M-x read-later-interactively-add-url
 
    You'll be prompted to enter the URL in the minibuffer.
-
-   *Suggested keybinding:*
-
-     (global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
-
-
-File: read-later.info,  Node: Keybindings,  Prev: Adding URLs Interactively,  Up: Usage
-
-4.3 Keybindings
-===============
-
-Here's a complete keybinding configuration:
-
-     (global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
-     (global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
-
-   Or using ‘use-package’:
-
-     (use-package read-later
-       :bind (("C-c i a" . read-later-add-url-at-point)
-              ("C-c i u" . read-later-interactively-add-url)))
 
 
 File: read-later.info,  Node: Integrations,  Next: Troubleshooting,  Prev: Usage,  Up: Top
@@ -508,6 +513,33 @@ File: read-later.info,  Node: Interactive Functions,  Next: Internal Functions, 
 7.1 Interactive Functions
 =========================
 
+ -- Command: read-later
+
+     Open the Instapaper bookmarks buffer.  Displays a tabulated list of
+     your bookmarks with titles, reading progress, tags, and
+     descriptions.
+
+     In the bookmarks buffer:
+        • Press ‘RET’ to open a bookmark in your browser
+        • Press ‘g’ to refresh the bookmark list
+
+     This is an interactive command that can be invoked with ‘M-x’.
+
+     *Example:*
+          M-x read-later
+
+ -- Command: read-later-update
+
+     Refresh the bookmarks buffer with the latest data from Instapaper.
+     This command updates the bookmark list to show any changes made on
+     other devices or through the Instapaper website.
+
+     This is an interactive command that can be invoked with ‘M-x’ or by
+     pressing ‘g’ in the bookmarks buffer.
+
+     *Example:*
+          M-x read-later-update
+
  -- Command: read-later-add-url-at-point
 
      Add the URL at point to Instapaper.  Detects the URL under the
@@ -630,6 +662,7 @@ Index
 * authinfo encrypted:                    Encrypted Credentials. (line 6)
 * authinfo plain text:                   Plain Text Credentials.
                                                                 (line 6)
+* bookmarks buffer:                      Viewing Bookmarks.     (line 6)
 * commands:                              Usage.                 (line 6)
 * configuration:                         Configuration.         (line 6)
 * connection issues:                     Network Issues.        (line 6)
@@ -652,13 +685,12 @@ Index
 * interactive URL input:                 Adding URLs Interactively.
                                                                 (line 6)
 * introduction:                          Introduction.          (line 6)
-* keybindings:                           Keybindings.           (line 6)
-* keyboard shortcuts:                    Keybindings.           (line 6)
 * manual installation:                   Manual Installation.   (line 6)
 * network problems:                      Network Issues.        (line 6)
 * package installation:                  Installation.          (line 6)
 * problems:                              Troubleshooting.       (line 6)
 * read later service:                    Introduction.          (line 6)
+* refresh bookmarks:                     Refreshing Bookmarks.  (line 6)
 * RSS feeds:                             Elfeed Integration.    (line 6)
 * Spacemacs:                             Spacemacs Installation.
                                                                 (line 6)
@@ -670,6 +702,7 @@ Index
 * usage:                                 Usage.                 (line 6)
 * use-package:                           Using use-package.     (line 6)
 * variables:                             API Reference.         (line 6)
+* view bookmarks:                        Viewing Bookmarks.     (line 6)
 
 
 
@@ -689,21 +722,22 @@ Node: Plain Text Credentials8331
 Node: Encrypted Credentials8743
 Node: Testing Authentication9331
 Node: Usage9660
-Node: Adding URLs at Point10027
-Node: Adding URLs Interactively10431
-Node: Keybindings10841
-Node: Integrations11331
-Node: Elfeed Integration11584
-Node: Troubleshooting12715
-Node: Authentication Issues13115
-Node: Credential Issues13692
-Node: GPG Issues14095
-Node: Network Issues14506
-Node: API Reference14937
-Node: Interactive Functions15239
-Node: Internal Functions17162
-Node: Variables17951
-Node: Index18285
+Node: Viewing Bookmarks10095
+Node: Refreshing Bookmarks10541
+Node: Adding URLs at Point10854
+Node: Adding URLs Interactively11191
+Node: Integrations11480
+Node: Elfeed Integration11733
+Node: Troubleshooting12864
+Node: Authentication Issues13264
+Node: Credential Issues13841
+Node: GPG Issues14244
+Node: Network Issues14655
+Node: API Reference15086
+Node: Interactive Functions15388
+Node: Internal Functions18159
+Node: Variables18948
+Node: Index19282
 
 End Tag Table
 

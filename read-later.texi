@@ -342,13 +342,52 @@ You should see ``@samp{✓ Authentication successful!}'' in the minibuffer.
 @cindex usage
 @cindex commands
 
-Instapapier provides several interactive commands for adding URLs to Instapaper.
+Instapapier provides several interactive commands for managing your Instapaper bookmarks.
 
 @menu
+* Viewing Bookmarks::           View and manage your bookmarks
+* Refreshing Bookmarks::        Update the bookmark list
 * Adding URLs at Point::        Save URL under cursor
 * Adding URLs Interactively::   Enter URL manually
-* Keybindings::                 Suggested key configurations
 @end menu
+
+@node Viewing Bookmarks
+@section Viewing Bookmarks
+
+@findex read-later
+@cindex bookmarks buffer
+@cindex view bookmarks
+
+To open the Instapaper bookmarks buffer:
+
+@example
+M-x read-later
+@end example
+
+This opens a tabulated list of your Instapaper bookmarks where you can:
+
+@itemize @bullet
+@item
+Press @kbd{RET} to open a bookmark in your browser
+@item
+Press @kbd{g} to refresh the list
+@item
+View bookmark titles, reading progress, tags, and descriptions
+@end itemize
+
+@node Refreshing Bookmarks
+@section Refreshing Bookmarks
+
+@findex read-later-update
+@cindex refresh bookmarks
+
+If you have the bookmarks buffer open, you can refresh it:
+
+@example
+M-x read-later-update
+@end example
+
+Or simply press @kbd{g} in the bookmarks buffer.
 
 @node Adding URLs at Point
 @section Adding URLs at Point
@@ -364,12 +403,6 @@ M-x read-later-add-url-at-point
 
 The command will detect the URL at point and send it to Instapaper.
 
-@strong{Suggested keybinding:}
-
-@lisp
-(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
-@end lisp
-
 @node Adding URLs Interactively
 @section Adding URLs Interactively
 
@@ -383,33 +416,6 @@ M-x read-later-interactively-add-url
 @end example
 
 You'll be prompted to enter the URL in the minibuffer.
-
-@strong{Suggested keybinding:}
-
-@lisp
-(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
-@end lisp
-
-@node Keybindings
-@section Keybindings
-
-@cindex keybindings
-@cindex keyboard shortcuts
-
-Here's a complete keybinding configuration:
-
-@lisp
-(global-set-key (kbd "C-c i a") 'read-later-add-url-at-point)
-(global-set-key (kbd "C-c i u") 'read-later-interactively-add-url)
-@end lisp
-
-Or using @code{use-package}:
-
-@lisp
-(use-package read-later
-  :bind (("C-c i a" . read-later-add-url-at-point)
-         ("C-c i u" . read-later-interactively-add-url)))
-@end lisp
 
 @node Integrations
 @chapter Integrations
@@ -597,6 +603,44 @@ curl -I https://www.instapaper.com/api/authenticate
 
 @node Interactive Functions
 @section Interactive Functions
+
+@findex read-later
+@deffn Command read-later
+
+Open the Instapaper bookmarks buffer. Displays a tabulated list of your
+bookmarks with titles, reading progress, tags, and descriptions.
+
+In the bookmarks buffer:
+@itemize @bullet
+@item
+Press @kbd{RET} to open a bookmark in your browser
+@item
+Press @kbd{g} to refresh the bookmark list
+@end itemize
+
+This is an interactive command that can be invoked with @kbd{M-x}.
+
+@strong{Example:}
+@example
+M-x read-later
+@end example
+@end deffn
+
+@findex read-later-update
+@deffn Command read-later-update
+
+Refresh the bookmarks buffer with the latest data from Instapaper. This
+command updates the bookmark list to show any changes made on other devices
+or through the Instapaper website.
+
+This is an interactive command that can be invoked with @kbd{M-x} or by
+pressing @kbd{g} in the bookmarks buffer.
+
+@strong{Example:}
+@example
+M-x read-later-update
+@end example
+@end deffn
 
 @findex read-later-add-url-at-point
 @deffn Command read-later-add-url-at-point
