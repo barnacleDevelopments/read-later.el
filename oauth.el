@@ -36,6 +36,12 @@
 
 ;; Visit http://oauth.net/core/1.0a for the complete oauth spec.
 
+;; Fixes Applied:
+;; - Fixed POST request parameter encoding: POST parameters are now properly
+;;   URL-encoded in the request body (both for curl and url-retrieve methods).
+;;   Previously, parameters were only included in the OAuth signature but not
+;;   actually sent in the request body, causing POST requests to fail.
+
 ;; Oauth requires the client application to receive user authorization in order
 ;; to access restricted content on behalf of the user. This allows for
 ;; authenticated communication without jeopardizing the user's password.

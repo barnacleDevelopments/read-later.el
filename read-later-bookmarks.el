@@ -1,17 +1,7 @@
-;;; read-later-bookmarks.el --- Bookmarks list interface -*- lexical-binding: t; -*-
+;;; read-later-bookmarks.el --- Bookmarks list functions-*- lexical-binding: t; -*-
 ;;
-;; Copyright (C) 2025 Devin Davis
-;;
-;; Author: Devin Davis
-;; Maintainer: Devin Davis
-;; Created: November 29, 2025
-;; Version: 2.0.0
-;; Package-Requires: ((emacs "29.1"))
-;;
-;; This file is not part of GNU Emacs.
-
 ;;; Commentary:
-;; Provides a tabulated list interface for viewing Instapaper bookmarks
+;;; Internal utilities for managing bookmarks
 
 ;;; Code:
 
