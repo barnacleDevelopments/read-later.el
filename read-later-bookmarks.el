@@ -54,7 +54,7 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
 
 (defvar read-later-bookmarks-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "g") 'read-later-refresh-bookmarks)
+    (define-key map (kbd "g") 'read-later-update)
     (define-key map (kbd "RET") 'read-later-open-bookmark-at-point)
     map)
   "Keymap for `read-later-bookmarks-mode'.")
