@@ -21,7 +21,7 @@
 
 ;;; Variables
 
-(defvar-local read-later--bookmarks-data nil
+(defvar read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
 
 ;;; Helper Functions

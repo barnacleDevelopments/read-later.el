@@ -86,16 +86,21 @@
   (read-later-add-url url))
 
 ;;; Bookmarks List Functions
+(defun read-later--get-resource-ids (resource-list)
+  "Return list of ids of provided RESOURCE-LIST."
+  (mapconcat 'number-to-string (mapcar (lambda (resource)
+                                         (plist-get resource :bookmark_id)) resource-list) ","))
 
 (defun read-later-refresh-bookmarks ()
   "Refreshes the bookmark buffer."
   (interactive)
   (message "Refreshing bookmarks...")
-  (read-later-api-full-request 'bookmarks-list
-                               :callback
-                               (lambda (result)
-                                 (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                   (with-current-buffer "*Instapaper Bookmarks*"
+  (with-current-buffer "*Instapaper Bookmarks*"
+    (read-later-api-full-request 'bookmarks-list
+                                 :params `(("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))
+                                 :callback
+                                 (lambda (result)
+                                   (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                      (setq read-later--bookmarks-data bookmarks)
                                      (setq tabulated-list-entries
                                            (mapcar (lambda (bookmark)
