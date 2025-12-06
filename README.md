@@ -197,7 +197,6 @@ M-x read-later
 ```
 
 This opens a tabulated list of your Instapaper bookmarks where you can:
-- Press `RET` to open a bookmark in your browser
 - Press `g` to refresh the list
 - View bookmark titles, reading progress, tags, and descriptions
 
