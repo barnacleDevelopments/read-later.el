@@ -5,7 +5,7 @@
 ;; Author: Devin Davis
 ;; Maintainer: Devin Davis
 ;; Created: November 11, 2025
-;; Version: 2.1.0
+;; Version: 2.1.1
 ;; Package-Requires: ((emacs "29.1"))
 ;;
 ;; This file is not part of GNU Emacs.
@@ -96,7 +96,6 @@ Set by `read-later-api-oauth-setup'.")
 Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
   (let ((auth-info (car (auth-source-search :host read-later-api--host
                                             :require '(:user :secret)))))
-    (message "result is: %S" auth-info)
     (when auth-info
       (cons (plist-get auth-info :user)
             (funcall (plist-get auth-info :secret))))))
@@ -107,8 +106,6 @@ Returns a cons cell (CONSUMER-KEY . CONSUMER-SECRET) or nil if not found.
 Looks for host 'instapaper-oauth'."
   (let ((auth-info (car (auth-source-search :host "instapaper-oauth"
                                             :require '(:user :secret)))))
-
-    (message "result is: %S" auth-info)
     (when auth-info
       (cons (plist-get auth-info :user)
             (funcall (plist-get auth-info :secret))))))
@@ -232,8 +229,6 @@ Returns the oauth-access-token object on success, or nil on failure."
     (unless user-creds
       (error "User credentials not found. Please add 'www.instapaper.com' to your authinfo file"))
 
-    (message "Obtaining OAuth access token for %s..." username)
-
     ;; Create OAuth request for xAuth access token
     (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
            (req (oauth-make-request access-token-url consumer-key))
@@ -260,11 +255,9 @@ Returns the oauth-access-token object on success, or nil on failure."
                      :consumer-key consumer-key
                      :consumer-secret consumer-secret
                      :auth-t token))
-              (message "OAuth access token obtained successfully")
               read-later-api--oauth-access-token)
           (error
-           (message "Failed to obtain OAuth access token: %s" (error-message-string err))
-           nil))))))
+           (error "Failed to obtain OAuth access token: %s" (error-message-string err))))))))
 
 (defun read-later-api-full-request (endpoint &rest args)
   "Make a Full API request to ENDPOINT with ARGS.
@@ -300,7 +293,6 @@ Example usage:
 
     ;; Ensure we have an OAuth access token
     (unless read-later-api--oauth-access-token
-      (message "No OAuth token found. Setting up OAuth...")
       (unless (read-later-api-oauth-setup)
         (error "Failed to obtain OAuth access token. Cannot proceed with Full API request")))
 

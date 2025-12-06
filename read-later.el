@@ -92,27 +92,33 @@
                                          (plist-get resource :bookmark_id)) resource-list) ","))
 
 ;;;###autoload
-(defun read-later-update ()
+(defun read-later-refresh-bookmarks ()
   "Refreshes the bookmark buffer."
   (interactive)
   (message "Refreshing bookmarks...")
-  (with-current-buffer "*Instapaper Bookmarks*"
-    (read-later-api-full-request 'bookmarks-list
-                                 :params `(("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))
-                                 :callback
-                                 (lambda (result)
-                                   (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                     (setq read-later--bookmarks-data bookmarks)
-                                     (setq tabulated-list-entries
-                                           (mapcar (lambda (bookmark)
-                                                     (list (plist-get bookmark :bookmark_id)
-                                                           (vector (or (plist-get bookmark :title) "")
-                                                                   (read-later--format-progress (plist-get bookmark :progress))
-                                                                   (read-later--format-tags (plist-get bookmark :tags))
-                                                                   (or (plist-get bookmark :description) ""))))
-                                                   bookmarks))
-                                     (tabulated-list-print t)
-                                     (message "✓ Bookmarks refreshed"))))))
+  (if (not (get-buffer "*Instapaper Bookmarks*"))
+      (message "✗ Please run M-x read-later first to create the bookmarks buffer")
+    (with-current-buffer "*Instapaper Bookmarks*"
+      (let ((params (when (and read-later--bookmarks-data
+                               (> (length read-later--bookmarks-data) 0))
+                      `(("have" . ,(read-later--get-resource-ids read-later--bookmarks-data))))))
+        (read-later-api-full-request 'bookmarks-list
+                                     :params params
+                                     :callback
+                                     (lambda (result)
+                                       (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                         (with-current-buffer "*Instapaper Bookmarks*"
+                                           (setq read-later--bookmarks-data bookmarks)
+                                           (setq tabulated-list-entries
+                                                 (mapcar (lambda (bookmark)
+                                                           (list (plist-get bookmark :bookmark_id)
+                                                                 (vector (or (plist-get bookmark :title) "")
+                                                                         (read-later--format-progress (plist-get bookmark :progress))
+                                                                         (read-later--format-tags (plist-get bookmark :tags))
+                                                                         (or (plist-get bookmark :description) ""))))
+                                                         bookmarks))
+                                           (tabulated-list-print t)
+                                           (message "✓ Bookmarks refreshed")))))))))
 
 ;;;###autoload
 (defun read-later ()

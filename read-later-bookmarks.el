@@ -22,21 +22,17 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
   (let ((type (plist-get args :type))
         (body (plist-get result :body)))
     (if (plist-get result :success)
-        (progn
-          (message "✓ \"%s\" retrieved" type)
-          (let* ((json-object-type 'plist)
-                 (json-key-type 'keyword)
-                 (json-array-type 'list)
-                 (parsed (json-read-from-string body))
-                 ;; Filter the flat array for items matching the type
-                 (items (cl-remove-if-not
-                         (lambda (item)
-                           (string= (plist-get item :type) type))
-                         parsed)))
-            (message "DEBUG: Found %d items of type '%s'" (length items) type)
-            items))
-      (message "✗ Failed to fetch resource: %s" (plist-get result :message))
-      nil)))
+        (let* ((json-object-type 'plist)
+               (json-key-type 'keyword)
+               (json-array-type 'list)
+               (parsed (json-read-from-string body))
+               ;; Filter the flat array for items matching the type
+               (items (cl-remove-if-not
+                       (lambda (item)
+                         (string= (plist-get item :type) type))
+                       parsed)))
+          items)
+      (error "Failed to fetch resource: %s" (plist-get result :message)))))
 
 (defun read-later--format-progress (progress)
   "Format PROGRESS as a percentage string."
