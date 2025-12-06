@@ -91,7 +91,8 @@
   (mapconcat 'number-to-string (mapcar (lambda (resource)
                                          (plist-get resource :bookmark_id)) resource-list) ","))
 
-(defun read-later-refresh-bookmarks ()
+;;;###autoload
+(defun read-later-update ()
   "Refreshes the bookmark buffer."
   (interactive)
   (message "Refreshing bookmarks...")
@@ -114,8 +115,8 @@
                                      (message "✓ Bookmarks refreshed"))))))
 
 ;;;###autoload
-(defun read-later-view-bookmarks ()
-  "Fetch and display Instapaper bookmarks in a vtable."
+(defun read-later ()
+  "Enter read-later."
   (interactive)
   (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
