@@ -94,7 +94,7 @@ Run `doom sync` after adding the package, then restart Emacs.
 4. Verify your email address
 
 #### a. Request Full API Credentials from Instapaper
-To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them. Eventually, I would like to setup an intermediary that can handle managing consumer credentials so that users don't require them to use this package. For the time being, if you would like to take advantage of this package's full functionality you'll need supply your own by contacting Instapaper:
+To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of key + secret from them. Eventually, I would like to setup an intermediary that can handle managing consumer credentials so that users don't require them to use this package. For the time being, if you would like to take advantage of this package's full functionality you'll need supply your own by contacting Instapaper:
 
 Request your OAuth consumer token here: [https://www.instapaper.com/main/request_oauth_consumer_token](https://www.instapaper.com/main/request_oauth_consumer_token)
 
