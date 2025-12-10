@@ -15,7 +15,7 @@ The package currently supports OAuth 1.0 authentication with the Instapaper Full
 
 - Emacs 29.1 or higher
 - An Instapaper account (see setup below)
-- Instapaper OAuth Consumer Key and Secret (required for Full API access - contact Instapaper support to obtain these)
+- Instapaper OAuth Consumer Key and Secret (see instructions below)
 
 ## Installation
 
