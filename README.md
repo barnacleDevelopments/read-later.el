@@ -1,13 +1,12 @@
 # read-later.el
-
-Send URLs to Instapaper directly from Emacs with ease.
+Manage your Instapaper account using Emacs!
 
 ## Features
 
 - Add URLs to your Instapaper account from anywhere in Emacs
-- Integration with elfeed for saving RSS feed entries
-- Secure credential management using auth-source
-- Interactive URL input or add URLs at point
+- Integration with elfeed for saving RSS feed entries to Instapaper
+- View your bookmarks and tags
+- Fully manage your bookmarks (coming soon)
 
 ## Full API Status
 The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
