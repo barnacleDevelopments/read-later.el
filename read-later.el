@@ -99,8 +99,7 @@
   (if (not (get-buffer "*Instapaper Bookmarks*"))
       (message "✗ Please run M-x read-later first to create the bookmarks buffer")
     (with-current-buffer "*Instapaper Bookmarks*"
-      (let ((params `(("limit" . "25")
-                      ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
+      (let ((params `(("limit" . "5"))))
         (read-later-api-full-request 'bookmarks-list
                                      :params params
                                      :callback
@@ -118,6 +117,30 @@
                                                          bookmarks))
                                            (tabulated-list-print t)
                                            (message "✓ Bookmarks refreshed")))))))))
+
+(defun read-later-load-more ()
+  "Loads extra bookmarks to the bookmark buffer."
+  (interactive)
+  (with-current-buffer "*Instapaper Bookmarks*"
+    (let ((params `(("limit" . ,(number-to-string (+ 5 (or (length read-later--bookmarks-data) 0))))
+                    ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
+      (read-later-api-full-request 'bookmarks-list
+                                   :params params
+                                   :callback
+                                   (lambda (result)
+                                     (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                       (with-current-buffer "*Instapaper Bookmarks*"
+                                         (setq read-later--bookmarks-data (append read-later--bookmarks-data bookmarks))
+                                         (setq tabulated-list-entries
+                                               (mapcar (lambda (bookmark)
+                                                         (list (plist-get bookmark :bookmark_id)
+                                                               (vector (or (plist-get bookmark :title) "")
+                                                                       (read-later--format-progress (plist-get bookmark :progress))
+                                                                       (read-later--format-tags (plist-get bookmark :tags))
+                                                                       (or (plist-get bookmark :description) ""))))
+                                                       read-later--bookmarks-data))
+                                         (tabulated-list-print t)
+                                         (message "✓ More loaded"))))))))
 
 ;;;###autoload
 (defun read-later ()
