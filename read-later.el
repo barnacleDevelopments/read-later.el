@@ -107,19 +107,12 @@
                                        (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                          (with-current-buffer "*Instapaper Bookmarks*"
                                            (setq read-later--bookmarks-data bookmarks)
-                                           (setq tabulated-list-entries
-                                                 (mapcar (lambda (bookmark)
-                                                           (list (plist-get bookmark :bookmark_id)
-                                                                 (vector (or (plist-get bookmark :title) "")
-                                                                         (read-later--format-progress (plist-get bookmark :progress))
-                                                                         (read-later--format-tags (plist-get bookmark :tags))
-                                                                         (or (plist-get bookmark :description) ""))))
-                                                         bookmarks))
+                                           (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
                                            (tabulated-list-print t)
                                            (message "✓ Bookmarks refreshed")))))))))
 
 (defun read-later-load-more ()
-  "Loads extra bookmarks to the bookmark buffer."
+  "Load extra bookmarks into the bookmark buffer."
   (interactive)
   (with-current-buffer "*Instapaper Bookmarks*"
     (let ((params `(("limit" . ,(number-to-string (+ 5 (or (length read-later--bookmarks-data) 0))))
@@ -131,14 +124,7 @@
                                      (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                        (with-current-buffer "*Instapaper Bookmarks*"
                                          (setq read-later--bookmarks-data (append read-later--bookmarks-data bookmarks))
-                                         (setq tabulated-list-entries
-                                               (mapcar (lambda (bookmark)
-                                                         (list (plist-get bookmark :bookmark_id)
-                                                               (vector (or (plist-get bookmark :title) "")
-                                                                       (read-later--format-progress (plist-get bookmark :progress))
-                                                                       (read-later--format-tags (plist-get bookmark :tags))
-                                                                       (or (plist-get bookmark :description) ""))))
-                                                       read-later--bookmarks-data))
+                                         (setq tabulated-list-entries (read-later--format-bookmarks read-later--bookmarks-data))
                                          (tabulated-list-print t)
                                          (message "✓ More loaded"))))))))
 
@@ -149,6 +135,17 @@
   (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Instapaper Bookmarks*")))
+
+(defun read-later-open-bookmark-at-point ()
+  "Open the bookmark URL at point in browser."
+  (interactive)
+  (let* ((bookmark-id (tabulated-list-get-id))
+         (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
+                               read-later--bookmarks-data))
+         (url (plist-get bookmark :url)))
+    (if url
+        (browse-url url)
+      (message "No URL found for this bookmark"))))
 
 (provide 'read-later)
 

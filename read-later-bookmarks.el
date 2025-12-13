@@ -74,27 +74,19 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
   (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
     (read-later-bookmarks-mode)
     (setq read-later--bookmarks-data bookmarks)
-    (setq tabulated-list-entries
-          (mapcar (lambda (bookmark)
-                    (list (plist-get bookmark :bookmark_id)
-                          (vector (or (plist-get bookmark :title) "")
-                                  (read-later--format-progress (plist-get bookmark :progress))
-                                  (read-later--format-tags (plist-get bookmark :tags))
-                                  (or (plist-get bookmark :description) ""))))
-                  bookmarks))
+    (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
     (tabulated-list-print t)
     (current-buffer)))
 
-(defun read-later-open-bookmark-at-point ()
-  "Open the bookmark URL at point in browser."
-  (interactive)
-  (let* ((bookmark-id (tabulated-list-get-id))
-         (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
-                               read-later--bookmarks-data))
-         (url (plist-get bookmark :url)))
-    (if url
-        (browse-url url)
-      (message "No URL found for this bookmark"))))
+(defun read-later--format-bookmarks (bookmarks)
+  "Format BOOKMARKS data."
+  (mapcar (lambda (bookmark)
+            (list (plist-get bookmark :bookmark_id)
+                  (vector (or (plist-get bookmark :title) "")
+                          (read-later--format-progress (plist-get bookmark :progress))
+                          (read-later--format-tags (plist-get bookmark :tags))
+                          (or (plist-get bookmark :description) ""))))
+          bookmarks))
 
 (provide 'read-later-bookmarks)
 
