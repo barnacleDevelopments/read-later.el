@@ -99,9 +99,8 @@
   (if (not (get-buffer "*Instapaper Bookmarks*"))
       (message "✗ Please run M-x read-later first to create the bookmarks buffer")
     (with-current-buffer "*Instapaper Bookmarks*"
-      (let ((params (when (and read-later--bookmarks-data
-                               (> (length read-later--bookmarks-data) 0))
-                      `(("have" . ,(read-later--get-resource-ids read-later--bookmarks-data))))))
+      (let ((params `(("limit" . "25")
+                      ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
         (read-later-api-full-request 'bookmarks-list
                                      :params params
                                      :callback

@@ -298,8 +298,15 @@ Example usage:
 
     ;; Build the URL (without query parameters - they go in POST body)
     (let* ((api-url (read-later-api--build-url endpoint nil id))
-           (oauth-post-vars-alist params)
-           (url-request-method method))
+           (url-request-method method)
+           ;; Set Content-Type for POST requests with parameters
+           (url-request-extra-headers
+            (when params
+              '(("Content-Type" . "application/x-www-form-urlencoded")))))
+
+      ;; Set oauth-post-vars-alist as a dynamic variable (not a let binding)
+      ;; so oauth-url-retrieve can access it
+      (setq oauth-post-vars-alist params)
 
       ;; Use oauth.el's url-retrieve wrapper which handles signing
       (oauth-url-retrieve
