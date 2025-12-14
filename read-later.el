@@ -99,7 +99,7 @@
   (if (not (get-buffer "*Instapaper Bookmarks*"))
       (message "✗ Please run M-x read-later first to create the bookmarks buffer")
     (with-current-buffer "*Instapaper Bookmarks*"
-      (let ((params `(("limit" . "5"))))
+      (let ((params `(("limit" . "25"))))
         (read-later-api-full-request 'bookmarks-list
                                      :params params
                                      :callback
@@ -115,7 +115,7 @@
   "Load extra bookmarks into the bookmark buffer."
   (interactive)
   (with-current-buffer "*Instapaper Bookmarks*"
-    (let ((params `(("limit" . ,(number-to-string (+ 5 (or (length read-later--bookmarks-data) 0))))
+    (let ((params `(("limit" . ,(number-to-string (+ 25 (or (length read-later--bookmarks-data) 0))))
                     ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
       (read-later-api-full-request 'bookmarks-list
                                    :params params
@@ -126,7 +126,7 @@
                                          (setq read-later--bookmarks-data (append read-later--bookmarks-data bookmarks))
                                          (setq tabulated-list-entries (read-later--format-bookmarks read-later--bookmarks-data))
                                          (tabulated-list-print t)
-                                         (message "✓ More loaded"))))))))
+                                         (message "✓ 25 More Bookmarks loaded"))))))))
 
 ;;;###autoload
 (defun read-later ()
