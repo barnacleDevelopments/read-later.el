@@ -1,13 +1,12 @@
 # read-later.el
-
-Send URLs to Instapaper directly from Emacs with ease.
+Manage your Instapaper account using Emacs!
 
 ## Features
 
 - Add URLs to your Instapaper account from anywhere in Emacs
-- Integration with elfeed for saving RSS feed entries
-- Secure credential management using auth-source
-- Interactive URL input or add URLs at point
+- Integration with elfeed for saving RSS feed entries to Instapaper
+- View your bookmarks and tags
+- Fully manage your bookmarks (coming soon)
 
 ## Full API Status
 The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
@@ -16,7 +15,7 @@ The package currently supports OAuth 1.0 authentication with the Instapaper Full
 
 - Emacs 29.1 or higher
 - An Instapaper account (see setup below)
-- Instapaper OAuth Consumer Key and Secret (required for Full API access - contact Instapaper support to obtain these)
+- Instapaper OAuth Consumer Key and Secret (see instructions below)
 
 ## Installation
 
@@ -95,7 +94,7 @@ Run `doom sync` after adding the package, then restart Emacs.
 4. Verify your email address
 
 #### a. Request Full API Credentials from Instapaper
-To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of keys from them.
+To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of key + secret from them. Eventually, I would like to setup an intermediary that can handle managing consumer credentials so that users don't require them to use this package. For the time being, if you would like to take advantage of this package's full functionality you'll need supply your own by contacting Instapaper:
 
 Request your OAuth consumer token here: [https://www.instapaper.com/main/request_oauth_consumer_token](https://www.instapaper.com/main/request_oauth_consumer_token)
 
@@ -197,7 +196,6 @@ M-x read-later
 ```
 
 This opens a tabulated list of your Instapaper bookmarks where you can:
-- Press `RET` to open a bookmark in your browser
 - Press `g` to refresh the list
 - View bookmark titles, reading progress, tags, and descriptions
 
