@@ -111,6 +111,7 @@
                                            (tabulated-list-print t)
                                            (message "✓ Bookmarks refreshed")))))))))
 
+;;;###autoload
 (defun read-later-load-more ()
   "Load extra bookmarks into the bookmark buffer."
   (interactive)
