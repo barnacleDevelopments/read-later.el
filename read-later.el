@@ -103,51 +103,52 @@
 (defun read-later-update ()
   "Refreshes the bookmark buffer with the latest 25 bookmarks."
   (interactive)
-  (message "Refreshing bookmarks...")
-  (if (not (get-buffer "*Instapaper Bookmarks*"))
-      (message "✗ Please run M-x read-later first to create the bookmarks buffer")
-    (with-current-buffer "*Instapaper Bookmarks*"
-      (let ((params `(("limit" . "25"))))
-        (read-later-api-full-request 'bookmarks-list
-                                     :params params
-                                     :callback
-                                     (lambda (result)
-                                       (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                         (with-current-buffer "*Instapaper Bookmarks*"
-                                           (setq read-later--bookmarks-data bookmarks)
-                                           (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
-                                           (tabulated-list-print t)
-                                           (message "✓ Bookmarks refreshed")))))))))
+  (if(read-later-check-bookmarks-buffer)
+      (with-current-buffer "*Instapaper Bookmarks*"
+        (message "Refreshing bookmarks...")
+        (let ((params `(("limit" . "25"))))
+          (read-later-api-full-request 'bookmarks-list
+                                       :params params
+                                       :callback
+                                       (lambda (result)
+                                         (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                           (with-current-buffer "*Instapaper Bookmarks*"
+                                             (setq read-later--bookmarks-data bookmarks)
+                                             (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
+                                             (tabulated-list-print t)
+                                             (message "✓ Bookmarks refreshed")))))))))
 
 ;;;###autoload
 (defun read-later-load-more ()
   "Load extra bookmarks into the current bookmark buffer."
   (interactive)
-  (with-current-buffer "*Instapaper Bookmarks*"
-    (let ((params `(("limit" . ,(number-to-string (+ 25 (or (length read-later--bookmarks-data) 0))))
-                    ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
-      (read-later-api-full-request 'bookmarks-list
-                                   :params params
-                                   :callback
-                                   (lambda (result)
-                                     (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                       (with-current-buffer "*Instapaper Bookmarks*"
-                                         (setq read-later--bookmarks-data (append read-later--bookmarks-data bookmarks))
-                                         (setq tabulated-list-entries (read-later--format-bookmarks read-later--bookmarks-data))
-                                         (tabulated-list-print t)
-                                         (message "✓ 25 More Bookmarks loaded"))))))))
+  (if(read-later-check-bookmarks-buffer)
+      (with-current-buffer "*Instapaper Bookmarks*"
+        (let ((params `(("limit" . ,(number-to-string (+ 25 (or (length read-later--bookmarks-data) 0))))
+                        ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
+          (read-later-api-full-request 'bookmarks-list
+                                       :params params
+                                       :callback
+                                       (lambda (result)
+                                         (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
+                                           (with-current-buffer "*Instapaper Bookmarks*"
+                                             (setq read-later--bookmarks-data (append read-later--bookmarks-data bookmarks))
+                                             (setq tabulated-list-entries (read-later--format-bookmarks read-later--bookmarks-data))
+                                             (tabulated-list-print t)
+                                             (message "✓ 25 More Bookmarks loaded")))))))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
   "Open the bookmark URL at point in the bookmark buffer in browser."
   (interactive)
-  (let* ((bookmark-id (tabulated-list-get-id))
-         (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
-                               read-later--bookmarks-data))
-         (url (plist-get bookmark :url)))
-    (if url
-        (browse-url url)
-      (message "Warning: No URL found for this bookmark"))))
+  (if(read-later-check-bookmarks-buffer)
+      (let* ((bookmark-id (tabulated-list-get-id))
+             (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
+                                   read-later--bookmarks-data))
+             (url (plist-get bookmark :url)))
+        (if url
+            (browse-url url)
+          (message "Warning: No URL found for this bookmark")))))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 
@@ -165,6 +166,14 @@
                                              (if (plist-get result :success)
                                                  (message "✓ Added to Instapaper: %s" url)
                                                (message "✗ %s" (plist-get result :message))))))
+
+(defun read-later-check-bookmarks-buffer ()
+  "Check if the *Instapaper Bookmarks* buffer exists."
+  (if (get-buffer "*Instapaper Bookmarks*")
+      t
+    (message "Please run M-x read-later first to create the bookmarks buffer")
+    nil))
+
 (provide 'read-later)
 
 ;;; read-later.el ends here
