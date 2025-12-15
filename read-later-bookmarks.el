@@ -9,12 +9,8 @@
 (require 'json)
 (require 'cl-lib)
 
-;;; Variables
-
 (defvar read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
-
-;;; Helper Functions
 
 (defun read-later--handle-request-body (result &rest args)
   "Parse the JSON body from RESULT and extract items of TYPE.
@@ -34,6 +30,7 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
           items)
       (error "Failed to fetch resource: %s" (plist-get result :message)))))
 
+;; ========================================= FORMATER FUNCTIONS =========================================
 (defun read-later--format-progress (progress)
   "Format PROGRESS as a percentage string."
   (if progress
@@ -50,8 +47,17 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
                  tags "  ")
     ""))
 
-;;; Bookmarks Mode
+(defun read-later--format-bookmarks (bookmarks)
+  "Format BOOKMARKS data."
+  (mapcar (lambda (bookmark)
+            (list (plist-get bookmark :bookmark_id)
+                  (vector (or (plist-get bookmark :title) "")
+                          (read-later--format-progress (plist-get bookmark :progress))
+                          (read-later--format-tags (plist-get bookmark :tags))
+                          (or (plist-get bookmark :description) ""))))
+          bookmarks))
 
+;; ========================================= BOOKMARKS MODE =========================================
 (defvar read-later-bookmarks-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'read-later-update)
@@ -77,16 +83,6 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
     (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
     (tabulated-list-print t)
     (current-buffer)))
-
-(defun read-later--format-bookmarks (bookmarks)
-  "Format BOOKMARKS data."
-  (mapcar (lambda (bookmark)
-            (list (plist-get bookmark :bookmark_id)
-                  (vector (or (plist-get bookmark :title) "")
-                          (read-later--format-progress (plist-get bookmark :progress))
-                          (read-later--format-tags (plist-get bookmark :tags))
-                          (or (plist-get bookmark :description) ""))))
-          bookmarks))
 
 (provide 'read-later-bookmarks)
 
