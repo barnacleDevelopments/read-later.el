@@ -66,57 +66,6 @@
                                                (message "✓ Authentication successful!")
                                              (message "Authentication failed.")))))
 
-;;;###autoload
-(defun read-later-api-oauth-setup ()
-  "Set up OAuth authentication for the Instapaper Full API.
-Retrieves consumer credentials from 'instapaper-oauth' and user credentials
-from 'www.instapaper.com' in auth-source, then uses xAuth to obtain an
-access token. The token is cached in `read-later-api--oauth-access-token'.
-
-Returns the oauth-access-token object on success, or nil on failure."
-  (interactive)
-  (let* ((consumer-creds (read-later-api--get-oauth-consumer-credentials))
-         (user-creds (read-later-api--get-credentials))
-         (consumer-key (car consumer-creds))
-         (consumer-secret (cdr consumer-creds))
-         (username (car user-creds))
-         (password (cdr user-creds)))
-
-    (unless consumer-creds
-      (error "OAuth consumer credentials not found. Please add 'instapaper-oauth' to your authinfo file"))
-
-    (unless user-creds
-      (error "User credentials not found. Please add 'www.instapaper.com' to your authinfo file"))
-
-    ;; Create OAuth request for xAuth access token
-    (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
-           (req (oauth-make-request access-token-url consumer-key))
-           (xauth-params `(("x_auth_mode" . "client_auth")
-                           ("x_auth_username" . ,username)
-                           ("x_auth_password" . ,password))))
-
-      ;; Set HTTP method to POST (required by Instapaper)
-      (setf (oauth-request-http-method req) "POST")
-
-      ;; Add xAuth parameters to the request params for signature calculation
-      (setf (oauth-request-params req)
-            (append (oauth-request-params req) xauth-params))
-
-      ;; Sign the request with HMAC-SHA1
-      (oauth-sign-request-hmac-sha1 req consumer-secret)
-
-      ;; Fetch the access token with xAuth params in POST body
-      (let ((oauth-post-vars-alist xauth-params))
-        (condition-case err
-            (let ((token (oauth-fetch-token req)))
-              (setq read-later-api--oauth-access-token
-                    (make-oauth-access-token
-                     :consumer-key consumer-key
-                     :consumer-secret consumer-secret
-                     :auth-t token))
-              read-later-api--oauth-access-token)
-          (error
-           (error "Failed to obtain OAuth access token: %s" (error-message-string err))))))))
 ;; ========================================= ANY BUFFER FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-add-url-at-point()
@@ -188,6 +137,7 @@ Returns the oauth-access-token object on success, or nil on failure."
                                          (tabulated-list-print t)
                                          (message "✓ 25 More Bookmarks loaded"))))))))
 
+;;;###autoload
 (defun read-later-open-bookmark-at-point ()
   "Open the bookmark URL at point in the bookmark buffer in browser."
   (interactive)
@@ -200,6 +150,7 @@ Returns the oauth-access-token object on success, or nil on failure."
       (message "Warning: No URL found for this bookmark"))))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
+
 (defun read-later--get-resource-ids (resource-list)
   "Return list of ids of provided RESOURCE-LIST."
   (mapconcat 'number-to-string (mapcar (lambda (resource)
