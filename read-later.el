@@ -43,20 +43,10 @@
 
 (setq url-debug t)
 
-;;;###autoload
-(defun read-later-add-url (url)
-  "Add URL to Instapaper account asynchronously."
-  (message "Adding to Instapaper...")
-  (read-later-api-simple-request 'simple-add
-                                 :params `((url . ,url))
-                                 :callback (lambda (result)
-                                             (if (plist-get result :success)
-                                                 (message "✓ Added to Instapaper: %s" url)
-                                               (message "✗ %s" (plist-get result :message))))))
-
+;; ========================================= AUTH TEST FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-test-auth ()
-  "Test Instapaper authentication asynchronously."
+  "Test Instapaper simple authentication."
   (interactive)
   (message "Testing authentication...")
   (read-later-api-simple-request 'simple-authenticate
@@ -66,17 +56,73 @@
                                                (message "✗ %s" (plist-get result :message))))))
 
 ;;;###autoload
+(defun read-later-test-full-auth ()
+  "Test Instapaper Full API Authentication."
+  (interactive)
+  (message "Testing full api authentication...")
+  (read-later-api-full-request 'verify-credentials
+                               :callback (lambda(result)
+                                           (if (plist-get result :success)
+                                               (message "✓ Authentication successful!")
+                                             (message "Authentication failed.")))))
+
+;;;###autoload
+(defun read-later-api-oauth-setup ()
+  "Set up OAuth authentication for the Instapaper Full API.
+Retrieves consumer credentials from 'instapaper-oauth' and user credentials
+from 'www.instapaper.com' in auth-source, then uses xAuth to obtain an
+access token. The token is cached in `read-later-api--oauth-access-token'.
+
+Returns the oauth-access-token object on success, or nil on failure."
+  (interactive)
+  (let* ((consumer-creds (read-later-api--get-oauth-consumer-credentials))
+         (user-creds (read-later-api--get-credentials))
+         (consumer-key (car consumer-creds))
+         (consumer-secret (cdr consumer-creds))
+         (username (car user-creds))
+         (password (cdr user-creds)))
+
+    (unless consumer-creds
+      (error "OAuth consumer credentials not found. Please add 'instapaper-oauth' to your authinfo file"))
+
+    (unless user-creds
+      (error "User credentials not found. Please add 'www.instapaper.com' to your authinfo file"))
+
+    ;; Create OAuth request for xAuth access token
+    (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
+           (req (oauth-make-request access-token-url consumer-key))
+           (xauth-params `(("x_auth_mode" . "client_auth")
+                           ("x_auth_username" . ,username)
+                           ("x_auth_password" . ,password))))
+
+      ;; Set HTTP method to POST (required by Instapaper)
+      (setf (oauth-request-http-method req) "POST")
+
+      ;; Add xAuth parameters to the request params for signature calculation
+      (setf (oauth-request-params req)
+            (append (oauth-request-params req) xauth-params))
+
+      ;; Sign the request with HMAC-SHA1
+      (oauth-sign-request-hmac-sha1 req consumer-secret)
+
+      ;; Fetch the access token with xAuth params in POST body
+      (let ((oauth-post-vars-alist xauth-params))
+        (condition-case err
+            (let ((token (oauth-fetch-token req)))
+              (setq read-later-api--oauth-access-token
+                    (make-oauth-access-token
+                     :consumer-key consumer-key
+                     :consumer-secret consumer-secret
+                     :auth-t token))
+              read-later-api--oauth-access-token)
+          (error
+           (error "Failed to obtain OAuth access token: %s" (error-message-string err))))))))
+;; ========================================= ANY BUFFER FUNCTIONS =========================================
+;;;###autoload
 (defun read-later-add-url-at-point()
   "Add the URL at point to Instapaper."
   (interactive)
   (let ((url (thing-at-point 'url)))
-    (read-later-add-url url)))
-
-;;;###autoload
-(defun read-later-add-elfeed-entry-at-point()
-  "Add the elfeed entry at point in show buffer."
-  (interactive)
-  (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
     (read-later-add-url url)))
 
 ;;;###autoload
@@ -85,15 +131,28 @@
   (interactive "sArticle URL:")
   (read-later-add-url url))
 
+;; ========================================= ELFEED FUNCTIONS =========================================
+;;;###autoload
+(defun read-later-add-elfeed-entry-at-point()
+  "Add the elfeed entry at point in show buffer."
+  (interactive)
+  (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
+    (read-later-add-url url)))
+
 ;;; Bookmarks List Functions
-(defun read-later--get-resource-ids (resource-list)
-  "Return list of ids of provided RESOURCE-LIST."
-  (mapconcat 'number-to-string (mapcar (lambda (resource)
-                                         (plist-get resource :bookmark_id)) resource-list) ","))
+
+;; ========================================= BOOKMARK FUNCTIONS =========================================
+;;;###autoload
+(defun read-later ()
+  "Enter read-later. Open the bookmarks table buffer."
+  (interactive)
+  (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
+    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
+    (switch-to-buffer "*Instapaper Bookmarks*")))
 
 ;;;###autoload
 (defun read-later-update ()
-  "Refreshes the bookmark buffer."
+  "Refreshes the bookmark buffer with the latest 25 bookmarks."
   (interactive)
   (message "Refreshing bookmarks...")
   (if (not (get-buffer "*Instapaper Bookmarks*"))
@@ -113,7 +172,7 @@
 
 ;;;###autoload
 (defun read-later-load-more ()
-  "Load extra bookmarks into the bookmark buffer."
+  "Load extra bookmarks into the current bookmark buffer."
   (interactive)
   (with-current-buffer "*Instapaper Bookmarks*"
     (let ((params `(("limit" . ,(number-to-string (+ 25 (or (length read-later--bookmarks-data) 0))))
@@ -129,16 +188,8 @@
                                          (tabulated-list-print t)
                                          (message "✓ 25 More Bookmarks loaded"))))))))
 
-;;;###autoload
-(defun read-later ()
-  "Enter read-later."
-  (interactive)
-  (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
-    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
-    (switch-to-buffer "*Instapaper Bookmarks*")))
-
 (defun read-later-open-bookmark-at-point ()
-  "Open the bookmark URL at point in browser."
+  "Open the bookmark URL at point in the bookmark buffer in browser."
   (interactive)
   (let* ((bookmark-id (tabulated-list-get-id))
          (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
@@ -146,8 +197,23 @@
          (url (plist-get bookmark :url)))
     (if url
         (browse-url url)
-      (message "No URL found for this bookmark"))))
+      (message "Warning: No URL found for this bookmark"))))
 
+;; ========================================= UTILITY FUNCTIONS =========================================
+(defun read-later--get-resource-ids (resource-list)
+  "Return list of ids of provided RESOURCE-LIST."
+  (mapconcat 'number-to-string (mapcar (lambda (resource)
+                                         (plist-get resource :bookmark_id)) resource-list) ","))
+
+(defun read-later-add-url (url)
+  "Add URL to Instapaper account asynchronously."
+  (message "Adding to Instapaper...")
+  (read-later-api-simple-request 'simple-add
+                                 :params `((url . ,url))
+                                 :callback (lambda (result)
+                                             (if (plist-get result :success)
+                                                 (message "✓ Added to Instapaper: %s" url)
+                                               (message "✗ %s" (plist-get result :message))))))
 (provide 'read-later)
 
 ;;; read-later.el ends here
