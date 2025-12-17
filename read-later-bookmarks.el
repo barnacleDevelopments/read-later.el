@@ -47,7 +47,7 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
                  tags "  ")
     ""))
 
-(defun read-later--format-bookmarks (bookmarks)
+(defun read-later--create-bookmark-entries (bookmarks)
   "Format BOOKMARKS data."
   (mapcar (lambda (bookmark)
             (list (plist-get bookmark :bookmark_id)
@@ -80,7 +80,7 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
   (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
     (read-later-bookmarks-mode)
     (setq read-later--bookmarks-data bookmarks)
-    (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
+    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
     (tabulated-list-print t)
     (current-buffer)))
 

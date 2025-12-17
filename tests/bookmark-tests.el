@@ -12,8 +12,8 @@
   "Tests that provided alist of plist is converted to comma seperated list."
   (should (equal (read-later--format-tags '((:name "web")(:name "programming"))) "web  programming")))
 
-(ert-deftest read-later-test-format-bookmarks ()
-  (should (equal (read-later--format-bookmarks 
+(ert-deftest read-later-test-create-bookmark-entries ()
+  (should (equal (read-later--create-bookmark-entries
                   '((:bookmark_id 1945647911
                      :title "Exploring the depths of the ocean"
                      :progress 0.5

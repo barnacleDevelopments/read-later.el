@@ -132,7 +132,7 @@ Looks for host 'instapaper-oauth'."
                 full-path
                 "?"
                 (mapconcat (lambda (param)
-                             (when (cdr param)  ; Only include non-nil values
+                             (when (cdr param)
                                (format "%s=%s"
                                        (url-hexify-string (if (symbolp (car param))
                                                               (symbol-name (car param))
@@ -277,7 +277,7 @@ Example usage:
   ;; First time: setup OAuth (or call interactively: M-x read-later-api-oauth-setup)
   (read-later-api-oauth-setup)
 
-  ;; Make requests (OAuth setup happens automatically if needed)
+  ;; Make requests
   (read-later-api-full-request 'bookmarks-list
                                :params '((limit . \"25\"))
                                :callback #'my-handler)
@@ -313,8 +313,8 @@ Example usage:
        read-later-api--oauth-access-token
        api-url
        (when callback
-         (lambda (status)
-           (let ((result (read-later-api--parse-response status)))
+         (lambda (response)
+           (let ((result (read-later-api--parse-response response)))
              (kill-buffer (current-buffer))
              (funcall callback result))))
        nil))))

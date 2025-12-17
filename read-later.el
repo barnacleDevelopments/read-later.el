@@ -143,7 +143,7 @@
 (defun read-later--display-bookmarks (bookmarks)
   "Display BOOKMARKS in the buffer."
   (with-current-buffer "*Instapaper Bookmarks*"
-    (setq tabulated-list-entries (read-later--format-bookmarks bookmarks))
+    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
     (tabulated-list-print t)
     (message "  25 More Bookmarks loaded")))
 
