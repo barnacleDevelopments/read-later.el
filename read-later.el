@@ -125,7 +125,28 @@
                                        :params params
                                        :callback (lambda (result)
                                                    (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                                     (read-later--append-bookmarks bookmarks))))))))
+                                                     (read-later--append-bookmarks bookmarks)
+                                                     (message "  25 More Bookmarks loaded"))))))))
+
+;;;###autoload
+(defun read-later-delete-bookmark-at-point ()
+  "Delete bookmark at point."
+  (interactive)
+  (if(read-later-check-bookmarks-buffer)
+      (with-current-buffer "*Instapaper Bookmarks*"
+        (let ((id (tabulated-list-get-id)))
+          (read-later-api-full-request 'bookmarks-delete
+                                       :params `(("bookmark_id" . ,(number-to-string id)))
+                                       :callback (lambda (result)
+                                                   (let ((success (plist-get result :success)))
+                                                     (if success
+                                                         (progn
+                                                           (setq read-later--bookmarks-data
+                                                                 (cl-remove-if (lambda (b) (equal (plist-get b :bookmark_id) id))
+                                                                               read-later--bookmarks-data))
+                                                           (read-later--display-bookmarks read-later--bookmarks-data)
+                                                           (message "Bookmark deleted: %s" id))
+                                                       (message "Failed to delete bookmark: %s" id)))))))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
@@ -143,9 +164,9 @@
 (defun read-later--display-bookmarks (bookmarks)
   "Display BOOKMARKS in the buffer."
   (with-current-buffer "*Instapaper Bookmarks*"
+    (setq read-later--bookmarks-data bookmarks)
     (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
-    (tabulated-list-print t)
-    (message "  25 More Bookmarks loaded")))
+    (tabulated-list-print t)))
 
 (defun read-later--append-bookmarks (bookmarks)
   "Append BOOKMARKS to existing data."
@@ -180,10 +201,6 @@
 (provide 'read-later)
 
 ;;; read-later.el ends here
-
-
-
-
 
 
 
