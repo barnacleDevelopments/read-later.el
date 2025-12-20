@@ -135,18 +135,19 @@
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (let ((id (tabulated-list-get-id)))
-          (read-later-api-full-request 'bookmarks-delete
-                                       :params `(("bookmark_id" . ,(number-to-string id)))
-                                       :callback (lambda (result)
-                                                   (let ((success (plist-get result :success)))
-                                                     (if success
-                                                         (progn
-                                                           (setq read-later--bookmarks-data
-                                                                 (cl-remove-if (lambda (b) (equal (plist-get b :bookmark_id) id))
-                                                                               read-later--bookmarks-data))
-                                                           (read-later--display-bookmarks read-later--bookmarks-data)
-                                                           (message "Bookmark deleted: %s" id))
-                                                       (message "Failed to delete bookmark: %s" id)))))))))
+          (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
+              (read-later-api-full-request 'bookmarks-delete
+                                           :params `(("bookmark_id" . ,(number-to-string id)))
+                                           :callback (lambda (result)
+                                                       (let ((success (plist-get result :success)))
+                                                         (if success
+                                                             (progn
+                                                               (setq read-later--bookmarks-data
+                                                                     (cl-remove-if (lambda (b) (equal (plist-get b :bookmark_id) id))
+                                                                                   read-later--bookmarks-data))
+                                                               (read-later--display-bookmarks read-later--bookmarks-data)
+                                                               (message "Bookmark deleted: %s" id))
+                                                           (message "Failed to delete bookmark: %s" id))))))))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
