@@ -11,7 +11,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
   - Other management features (coming soon)
 
 ## Full API Status
-The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
+The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) are coming soon. Stay tuned for updates!
 
 ## Prerequisites
 
