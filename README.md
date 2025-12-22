@@ -1,5 +1,5 @@
 # read-later.el
-Manage your Instapaper account using Emacs! This project was inspired by the use of Instapaper on my Kobo e-reader. This package is for Emacs users that want to easily manage all their Instapaper bookmarks, highlights and tags. It also integrates with other packages like [Elfeed](https://github.com/skeeto/elfeed) to allow users to add articles to Instapaper without ever leaving the Emacs experience. 
+Manage your Instapaper account using Emacs! This project was inspired by the use of Instapaper on my Kobo e-reader. This package is for Emacs users that want to easily manage all their Instapaper bookmarks, highlights and folders. It also integrates with other packages like [Elfeed](https://github.com/skeeto/elfeed) to allow users to add articles to Instapaper without ever leaving the Emacs experience. 
 
 ## Features
 
