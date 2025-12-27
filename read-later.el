@@ -43,6 +43,43 @@
 
 (setq url-debug t)
 
+;; ========================================= READ LATER MODE =========================================
+
+(defvar read-later-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "u" 'read-later-update)
+    (define-key map "d" 'read-later-delete-bookmark-at-point)
+    (define-key map "l" 'read-later-load-more)
+    map)
+  "Keymap for read-later-mode.")
+
+(define-derived-mode read-later-mode tabulated-list-mode "Instapaper Bookmarks"
+  "Major mode for viewing Instapaper bookmarks."
+  (setq tabulated-list-format [("Title" 50 t)
+                               ("Progress" 10 t)
+                               ("Tags" 30 t)
+                               ("Description" 100 t)])
+  (setq tabulated-list-padding 2)
+  (setq tabulated-list-sort-key (cons "Title" nil))
+  (tabulated-list-init-header))
+
+;; Evil mode integration
+(with-eval-after-load 'evil
+  (evil-set-initial-state 'read-later-mode 'normal)
+  (evil-define-key 'normal read-later-mode-map
+    "u" 'read-later-update
+    "d" 'read-later-delete-bookmark-at-point
+    "l" 'read-later-load-more))
+
+(defun read-later--create-bookmarks-buffer (bookmarks)
+  "Create the bookmarks buffer with BOOKMARKS data."
+  (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
+    (read-later-mode)
+    (setq read-later--bookmarks-data bookmarks)
+    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
+    (tabulated-list-print t)
+    (current-buffer)))
+
 ;; ========================================= AUTH TEST FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-test-auth ()
@@ -126,7 +163,6 @@
                                        :callback (lambda (result)
                                                    (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                                      (read-later--append-bookmarks bookmarks)
-                                                     (read-later--remove-bookmarks (mapcar (lambda (b) (plist-get b :bookmark_id)) bookmarks))
                                                      (message "  25 More Bookmarks loaded"))))))))
 
 ;;;###autoload

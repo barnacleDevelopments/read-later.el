@@ -9,6 +9,9 @@
 (require 'json)
 (require 'cl-lib)
 
+(defvar read-later-map (make-sparse-keymap)
+  "Read later keymap.")
+
 (defvar read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
 
@@ -56,33 +59,6 @@ ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\".
                           (read-later--format-tags (plist-get bookmark :tags))
                           (or (plist-get bookmark :description) ""))))
           bookmarks))
-
-;; ========================================= BOOKMARKS MODE =========================================
-(defvar read-later-bookmarks-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "g") 'read-later-update)
-    (define-key map (kbd "RET") 'read-later-open-bookmark-at-point)
-    map)
-  "Keymap for `read-later-bookmarks-mode'.")
-
-(define-derived-mode read-later-bookmarks-mode tabulated-list-mode "Instapaper Bookmarks"
-  "Major mode for viewing Instapaper bookmarks."
-  (setq tabulated-list-format [("Title" 50 t)
-                               ("Progress" 10 t)
-                               ("Tags" 30 t)
-                               ("Description" 100 t)])
-  (setq tabulated-list-padding 2)
-  (setq tabulated-list-sort-key (cons "Title" nil))
-  (tabulated-list-init-header))
-
-(defun read-later--create-bookmarks-buffer (bookmarks)
-  "Create the bookmarks buffer with BOOKMARKS data."
-  (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
-    (read-later-bookmarks-mode)
-    (setq read-later--bookmarks-data bookmarks)
-    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
-    (tabulated-list-print t)
-    (current-buffer)))
 
 (provide 'read-later-bookmarks)
 
