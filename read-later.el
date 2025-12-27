@@ -126,6 +126,7 @@
                                        :callback (lambda (result)
                                                    (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                                      (read-later--append-bookmarks bookmarks)
+                                                     (read-later--remove-bookmarks (mapcar (lambda (b) (plist-get b :bookmark_id)) bookmarks))
                                                      (message "  25 More Bookmarks loaded"))))))))
 
 ;;;###autoload
@@ -142,12 +143,10 @@
                                                        (let ((success (plist-get result :success)))
                                                          (if success
                                                              (progn
-                                                               (setq read-later--bookmarks-data
-                                                                     (cl-remove-if (lambda (b) (equal (plist-get b :bookmark_id) id))
-                                                                                   read-later--bookmarks-data))
-                                                               (read-later--display-bookmarks read-later--bookmarks-data)
+                                                               (read-later--remove-bookmarks (list id))
                                                                (message "Bookmark deleted: %s" id))
                                                            (message "Failed to delete bookmark: %s" id))))))))))
+
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
@@ -173,6 +172,13 @@
   "Append BOOKMARKS to existing data."
   (setq read-later--bookmarks-data
         (append read-later--bookmarks-data bookmarks))
+  (read-later--display-bookmarks read-later--bookmarks-data))
+
+(defun read-later--remove-bookmarks (bookmarks)
+  "Remove BOOKMARKS list."
+  (setq read-later--bookmarks-data
+        (cl-remove-if (lambda (b) (member (plist-get b :bookmark_id) bookmarks))
+                      read-later--bookmarks-data))
   (read-later--display-bookmarks read-later--bookmarks-data))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
