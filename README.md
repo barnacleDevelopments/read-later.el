@@ -1,15 +1,17 @@
 # read-later.el
-Manage your Instapaper account using Emacs!
+Manage your Instapaper account using Emacs! This project was inspired by the use of Instapaper on my Kobo e-reader. This package is for Emacs users that want to easily manage all their Instapaper bookmarks, highlights and folders. It also integrates with other packages like [Elfeed](https://github.com/skeeto/elfeed) to allow users to add articles to Instapaper without ever leaving the Emacs experience. 
 
 ## Features
 
 - Add URLs to your Instapaper account from anywhere in Emacs
 - Integration with elfeed for saving RSS feed entries to Instapaper
 - View your bookmarks and tags
-- Fully manage your bookmarks (coming soon)
+- Fully manage your bookmarks
+  - Delete bookmarks
+  - Other management features (coming soon)
 
 ## Full API Status
-The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) is coming soon. Stay tuned for updates!
+The package currently supports OAuth 1.0 authentication with the Instapaper Full API. While you can authenticate and obtain access tokens, additional Full API functionality (such as managing folders, highlights, and advanced bookmark operations) are coming soon. Stay tuned for updates!
 
 ## Prerequisites
 
