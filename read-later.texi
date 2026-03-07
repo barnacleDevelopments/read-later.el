@@ -222,7 +222,31 @@ Add to your @file{packages.el}:
 @end lisp
 
 @item
-Run @command{doom sync} and restart Emacs.
+Run @command{doom sync}, then add to your @file{config.el}:
+
+@lisp
+;; ~/.doom.d/config.el
+(use-package! read-later
+  :commands (read-later
+             read-later-interactively-add-url
+             read-later-add-url-at-point
+             read-later-add-elfeed-entry-at-point)
+  :init
+  ;; Auth backend: 'authinfo (default) or '1password
+  (setq read-later-api-auth-backend 'authinfo)
+  ;; Override credential lookup host if needed (default: "www.instapaper.com")
+  ;; (setq read-later-api-host "www.instapaper.com")
+  :config
+  (map! :leader
+        (:prefix-map ("R" . "read-later")
+         :desc "Open bookmarks"   "R" #'read-later
+         :desc "Add URL"          "a" #'read-later-interactively-add-url
+         :desc "Add URL at point" "p" #'read-later-add-url-at-point
+         :desc "Setup OAuth"      "o" #'read-later-api-oauth-setup)))
+@end lisp
+
+@item
+Restart Emacs.
 @end enumerate
 
 @node Configuration
@@ -273,6 +297,7 @@ There are two main options:
 @menu
 * Plain Text Credentials::      Using ~/.authinfo
 * Encrypted Credentials::       Using ~/.authinfo.gpg (recommended)
+* 1Password Credentials::       Using 1Password
 @end menu
 
 @node Plain Text Credentials
@@ -284,6 +309,7 @@ Create or edit @file{~/.authinfo} and add:
 
 @example
 machine www.instapaper.com login your-email@@example.com password your-password
+machine instapaper-oauth login your-consumer-key password your-consumer-secret
 @end example
 
 @strong{Important:} This file stores credentials in plain text. Secure it with:
@@ -305,10 +331,11 @@ For better security, use an encrypted file:
 Create or edit @file{~/.authinfo.gpg}
 
 @item
-Add the same line as the plain text version:
+Add the same lines as the plain text version:
 
 @example
 machine www.instapaper.com login your-email@@example.com password your-password
+machine instapaper-oauth login your-consumer-key password your-consumer-secret
 @end example
 
 @item
@@ -321,6 +348,64 @@ Ensure GPG is configured in Emacs:
 (require 'epa-file)
 (epa-file-enable)
 @end lisp
+
+@node 1Password Credentials
+@subsection 1Password Credentials
+
+@cindex 1Password
+@cindex auth-source-1password
+
+You can store credentials in 1Password using the @code{auth-source-1password}
+package and the 1Password CLI.
+
+@enumerate
+@item
+Install the 1Password CLI (@command{op}) and sign in.
+
+@item
+Install @code{auth-source-1password}:
+
+@lisp
+(use-package auth-source-1password
+  :ensure t
+  :config
+  (auth-source-1password-enable))
+@end lisp
+
+@item
+Create a 1Password item named @code{www.instapaper.com} with:
+@itemize @bullet
+@item A field named @code{username} containing your Instapaper email
+@item A field named @code{password} containing your Instapaper password
+@end itemize
+
+@item
+Create a second item named @code{instapaper-oauth} with:
+@itemize @bullet
+@item A field named @code{username} containing your OAuth consumer key
+@item A field named @code{password} containing your OAuth consumer secret
+@end itemize
+
+@item
+Configure read-later to use 1Password:
+
+@lisp
+(setq read-later-api-auth-backend '1password)
+@end lisp
+
+@end enumerate
+
+If your 1Password item has a different name, override the lookup host:
+
+@lisp
+(setq read-later-api-host "My Instapaper Item")
+@end lisp
+
+@strong{Note:} On first use, you may be prompted for your 1Password master
+password up to four times (once per field for each of the two credential items).
+Subsequent calls use cached credentials. To minimize prompts, enable the desktop
+app CLI integration in 1Password @clicksequence{Settings @click{} Developer @click{}
+Integrate with 1Password CLI}.
 
 @node Testing Authentication
 @section Testing Authentication
@@ -750,14 +835,45 @@ read-later commands.
 @node Variables
 @section Variables
 
-@defvar read-later-api-url
-The base URL for the Instapaper API add endpoint.
+@defopt read-later-api-auth-backend
+The authentication backend to use when looking up credentials.
 
-@strong{Default value:}
-@code{"https://www.instapaper.com/api/add"}
+@strong{Default value:} @code{authinfo}
 
-This variable should not normally need to be changed.
-@end defvar
+@strong{Valid values:}
+@table @code
+@item authinfo
+Use @file{~/.authinfo} or @file{~/.authinfo.gpg} via Emacs' built-in
+@code{auth-source} library. This is the default.
+@item 1password
+Use 1Password via the @code{auth-source-1password} package and the
+1Password CLI. Requires @code{auth-source-1password} to be installed and
+configured. @xref{1Password Credentials}.
+@end table
+
+@strong{Example:}
+@lisp
+(setq read-later-api-auth-backend '1password)
+@end lisp
+@end defopt
+
+@defopt read-later-api-host
+The host name used to look up Instapaper account credentials in
+@code{auth-source}.
+
+@strong{Default value:} @code{"www.instapaper.com"}
+
+Override this if your credential store uses a different name for the
+Instapaper entry. For example, if your 1Password item is named
+@code{"Instapaper"}:
+
+@lisp
+(setq read-later-api-host "Instapaper")
+@end lisp
+
+The OAuth consumer credentials are always looked up under the host
+@code{instapaper-oauth} and are not affected by this variable.
+@end defopt
 
 @node Index
 @unnumbered Index

@@ -38,10 +38,19 @@
 (require 'auth-source)
 (require 'oauth)
 
+;;; Customization
+
+(defgroup read-later nil
+  "Instapaper client for Emacs."
+  :group 'tools
+  :prefix "read-later-")
+
 ;;; Internal constants
 
-(defconst read-later-api--host "www.instapaper.com"
-  "The official Instapaper host.")
+(defcustom read-later-api-host "www.instapaper.com"
+  "The host used to look up Instapaper credentials via auth-source."
+  :type 'string
+  :group 'read-later)
 
 (defconst read-later-api--base-url "https://www.instapaper.com"
   "The official Instapaper URL.")
@@ -51,6 +60,12 @@
 (defvar read-later-api--oauth-access-token nil
   "Cached OAuth access token for the current session.
 Set by `read-later-api-oauth-setup'.")
+
+(defvar read-later-api--cached-credentials nil
+  "Cached Instapaper account credentials for the current session.")
+
+(defvar read-later-api--cached-consumer-credentials nil
+  "Cached OAuth consumer credentials for the current session.")
 
 ;;; Endpoint registry
 
@@ -91,24 +106,49 @@ Set by `read-later-api-oauth-setup'.")
 
 ;;; Helper functions
 
-(defun read-later-api--get-credentials ()
-  "Retrieve Instapaper credentials from auth-source.
-Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
-  (let ((auth-info (car (auth-source-search :host read-later-api--host
-                                            :require '(:user :secret)))))
-    (when auth-info
-      (cons (plist-get auth-info :user)
-            (funcall (plist-get auth-info :secret))))))
+(defun read-later-api--resolve-secret (secret)
+  "Return the value of SECRET, calling it if it is a function."
+  (if (functionp secret) (funcall secret) secret))
+
+(defcustom read-later-api-auth-backend 'authinfo
+  "Auth backend to use, either 'authinfo or '1password."
+  :type '(choice (const authinfo) (const 1password))
+  :group 'read-later-api)
+
+(defun read-later-api--lookup-credentials (host)
+  "Look up credentials for HOST via auth-source.
+Returns a cons cell (USER . SECRET) or nil if not found."
+  (if (eq read-later-api-auth-backend '1password)
+      (let ((user   (auth-source-pick-first-password :host host :user "username"))
+            (secret (auth-source-pick-first-password :host host :user "password")))
+        (when (and user secret)
+          (cons user secret)))
+    (let* ((auth-info (car (auth-source-search :host host :require '(:user :secret))))
+           (user   (plist-get auth-info :user))
+           (secret (plist-get auth-info :secret)))
+      (when (and user secret)
+        (cons user (if (functionp secret) (funcall secret) secret))))))
 
 (defun read-later-api--get-oauth-consumer-credentials ()
-  "Retrieve OAuth consumer key and secret from auth-source.
-Returns a cons cell (CONSUMER-KEY . CONSUMER-SECRET) or nil if not found.
-Looks for host 'instapaper-oauth'."
-  (let ((auth-info (car (auth-source-search :host "instapaper-oauth"
-                                            :require '(:user :secret)))))
-    (when auth-info
-      (cons (plist-get auth-info :user)
-            (funcall (plist-get auth-info :secret))))))
+  "Retrieve Instapaper OAuth consumer key and secret from auth-source.
+Looks up host 'instapaper-oauth'.
+Returns a cons cell (CONSUMER-KEY . CONSUMER-SECRET) or nil if not found."
+  (or read-later-api--cached-consumer-credentials
+      (setq read-later-api--cached-consumer-credentials
+            (read-later-api--lookup-credentials "instapaper-oauth"))))
+
+(defun read-later-api--get-credentials ()
+  "Retrieve Instapaper credentials from auth-source.
+Looks up host `read-later-api-host'.
+Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
+  (or read-later-api--cached-credentials
+      (setq read-later-api--cached-credentials
+            (let ((creds (read-later-api--lookup-credentials read-later-api-host)))
+              (message "DEBUG get-credentials: host=%S user=%S password=%S"
+                       read-later-api-host
+                       (car creds)
+                       (cdr creds))
+              creds))))
 
 (defun read-later-api--make-auth-header (credentials)
   "Create Basic Auth header from CREDENTIALS cons cell."

@@ -84,7 +84,30 @@ Add to your `packages.el`:
   :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
 ```
 
-Run `doom sync` after adding the package, then restart Emacs.
+Run `doom sync` after adding the package, then add to your `config.el`:
+
+```elisp
+;; ~/.doom.d/config.el
+(use-package! read-later
+  :commands (read-later
+             read-later-interactively-add-url
+             read-later-add-url-at-point
+             read-later-add-elfeed-entry-at-point)
+  :init
+  ;; Auth backend: 'authinfo (default) or '1password
+  (setq read-later-api-auth-backend 'authinfo)
+  ;; Override the credential lookup host if needed (default: "www.instapaper.com")
+  ;; (setq read-later-api-host "www.instapaper.com")
+  :config
+  (map! :leader
+        (:prefix-map ("R" . "read-later")
+         :desc "Open bookmarks"   "R" #'read-later
+         :desc "Add URL"          "a" #'read-later-interactively-add-url
+         :desc "Add URL at point" "p" #'read-later-add-url-at-point
+         :desc "Setup OAuth"      "o" #'read-later-api-oauth-setup)))
+```
+
+Restart Emacs after running `doom sync`.
 
 ## Setting Up Instapaper
 
@@ -151,7 +174,42 @@ For better security, and to avoid your account getting banned if your credential
 
 Make sure you have GPG set up and configured in Emacs. The file will be automatically decrypted when accessed.
 
-#### Option 3: Using password-store (Encrypted)
+#### Option 3: Using 1Password
+
+You can store your credentials in [1Password](https://1password.com) using the [`auth-source-1password`](https://github.com/dlobraico/auth-source-1password) package and the [1Password CLI](https://developer.1password.com/docs/cli/).
+
+1. Install the 1Password CLI (`op`) and sign in
+2. Install `auth-source-1password`:
+   ```elisp
+   (use-package auth-source-1password
+     :ensure t
+     :config
+     (auth-source-1password-enable))
+   ```
+3. Create a 1Password item named `www.instapaper.com` with:
+   - A field named `username` containing your Instapaper email
+   - A field named `password` containing your Instapaper password
+4. Create a second 1Password item named `instapaper-oauth` with:
+   - A field named `username` containing your OAuth consumer key
+   - A field named `password` containing your OAuth consumer secret
+5. Configure read-later to use 1Password:
+   ```elisp
+   (setq read-later-api-auth-backend '1password)
+   ```
+
+If your 1Password item has a different name, override the lookup host:
+```elisp
+(setq read-later-api-host "My Instapaper Item")
+```
+
+> **Note:** When authenticating, you may be prompted for your 1Password master password up to four times on first use of the Full API (once each for the username and password fields of both your account and OAuth consumer credentials). The Simple API prompts twice. Subsequent calls will not prompt again as credentials are cached for the session.
+>
+> To minimize prompts, choose one of the following:
+> - **Desktop app integration** *(recommended)* — in 1Password → Settings → Developer, enable "Integrate with 1Password CLI". The CLI will use the desktop app's unlock state (biometric or system password), so no separate signin is needed.
+> - **Shell login** — add `eval $(op signin)` to your `~/.bash_profile` or `~/.zprofile` to authenticate once at login. Sessions last 30 minutes by default.
+> - **Extend session timeout** — add `"session_timeout": 86400` to `~/.config/op/config` to keep the session alive for 24 hours.
+
+#### Option 4: Using password-store (Encrypted)
 
 You can securely store your credentials with [`pass`](https://www.passwordstore.org) using the [`password-store.el`](https://git.zx2c4.com/password-store/tree/contrib/emacs/password-store.el) Emacs integration.
 
@@ -167,7 +225,7 @@ You can securely store your credentials with [`pass`](https://www.passwordstore.
    (auth-source-pass-enable)
    ```
 
-Instapapier should now be able to access your password-store credentials.
+Instapaper should now be able to access your password-store credentials.
 
 ### 3. Test Your Configuration
 
