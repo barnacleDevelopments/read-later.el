@@ -41,7 +41,11 @@
 (require 'read-later-bookmarks)
 (require 'json)
 
-(setq url-debug t)
+;; Variables
+(defcustom read-later-param-limit 25
+  "The instapaper API limit query parameter value."
+  :type 'integer
+  :group 'read-later)
 
 ;; ========================================= READ LATER MODE =========================================
 
@@ -62,14 +66,6 @@
   (setq tabulated-list-padding 2)
   (setq tabulated-list-sort-key (cons "Title" nil))
   (tabulated-list-init-header))
-
-;; Evil mode integration
-(with-eval-after-load 'evil
-  (evil-set-initial-state 'read-later-mode 'normal)
-  (evil-define-key 'normal read-later-mode-map
-    "u" 'read-later-update
-    "d" 'read-later-delete-bookmark-at-point
-    "l" 'read-later-load-more))
 
 (defun read-later--create-bookmarks-buffer (bookmarks)
   "Create the bookmarks buffer with BOOKMARKS data."
@@ -138,12 +134,12 @@
 
 ;;;###autoload
 (defun read-later-update ()
-  "Refreshes the bookmark buffer with the latest 25 bookmarks."
+  "Refreshes the bookmark buffer with the latest # bookmarks."
   (interactive)
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (message "Refreshing bookmarks...")
-        (let ((params `(("limit" . "25"))))
+        (let ((params `(("limit" . ,(number-to-string read-later-param-limit)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :callback (lambda (result)
@@ -156,14 +152,14 @@
   (interactive)
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
-        (let ((params `(("limit" . ,(number-to-string (+ 25 (or (length read-later--bookmarks-data) 0))))
+        (let ((params `(("limit" . ,(number-to-string (+ read-later-param-limit (or (length read-later--bookmarks-data) 0))))
                         ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :callback (lambda (result)
                                                    (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                                      (read-later--append-bookmarks bookmarks)
-                                                     (message "  25 More Bookmarks loaded"))))))))
+                                                     (message (format "  %S More Bookmarks loaded" read-later-param-limit)))))))))
 
 ;;;###autoload
 (defun read-later-delete-bookmark-at-point ()
