@@ -42,8 +42,13 @@
 (require 'json)
 
 ;; Variables
-(defcustom read-later-param-limit 25
-  "The instapaper API limit query parameter value."
+(defcustom read-later-update-limit 25
+  "The Instapaper API limit query parameter value."
+  :type 'integer
+  :group 'read-later)
+
+(defcustom read-later-append-limit 50
+  "The Instapaper API limit query parameter value when loading more."
   :type 'integer
   :group 'read-later)
 
@@ -139,7 +144,7 @@
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (message "Refreshing bookmarks...")
-        (let ((params `(("limit" . ,(number-to-string read-later-param-limit)))))
+        (let ((params `(("limit" . ,(number-to-string read-later-update-limit)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :callback (lambda (result)
@@ -152,14 +157,14 @@
   (interactive)
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
-        (let ((params `(("limit" . ,(number-to-string (+ read-later-param-limit (or (length read-later--bookmarks-data) 0))))
+        (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
                         ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :callback (lambda (result)
                                                    (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
                                                      (read-later--append-bookmarks bookmarks)
-                                                     (message (format "  %S More Bookmarks loaded" read-later-param-limit)))))))))
+                                                     (message (format "  %S More Bookmarks loaded" read-later-append-limit)))))))))
 
 ;;;###autoload
 (defun read-later-delete-bookmark-at-point ()
@@ -179,6 +184,31 @@
                                                                (message "Bookmark deleted: %s" id))
                                                            (message "Failed to delete bookmark: %s" id))))))))))
 
+(defun read-later-mark-read-at-point ()
+  "Mark the bookmark at point as read."
+  (interactive)
+  (let((id (tabulated-list-get-id)))
+    (message (format "Updating read progress for: %S" id))
+    (read-later--update-bookmark-read-progress id 1.0)))
+
+(defun read-later-mark-unread-at-point ()
+  "Mark the bookmark at point as unread."
+  (interactive)
+  (let((id (tabulated-list-get-id)))
+    (message (format "Updating read progress for: %S" id))
+    (read-later--update-bookmark-read-progress id 0))))
+
+(defun read-later--update-bookmark-read-progress (id progress)
+  "Update the bookmarks with ID to read PROGRESS."
+  (read-later-api-full-request 'bookmarks-update-progress
+                               :params `(("bookmark_id" . ,(number-to-string id)) ("progress" . ,(number-to-string progress)) ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
+                               :callback (lambda (result)
+                                           (message (format "RESULT: %S" result))
+                                           (let ((success (plist-get result :success)))
+                                             (if success
+                                                 (progn
+                                                   (message "Bookmark read progress updated"))
+                                               (message "Bookmark read progress update failed"))))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
@@ -212,6 +242,12 @@
         (cl-remove-if (lambda (b) (member (plist-get b :bookmark_id) bookmarks))
                       read-later--bookmarks-data))
   (read-later--display-bookmarks read-later--bookmarks-data))
+
+(defun read-later--update-bookmark (bookmark)
+  "Update BOOKMARK fields inside tabulated list. The bookmark must have an ID."
+  ;;get the bookmark record from the tabulated list
+  ;;update the bookmark with the provided bookmark
+  )
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 
