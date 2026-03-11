@@ -199,8 +199,11 @@
     (read-later--update-bookmark-read-progress id 0)))
 
 ;; TODO Need to add toggle archived
-;; TODO Need to add column for arhived status
+;; TODO Need to add column for archived status
 ;; TODO Maybe just add filtering options generaly???
+;; - filter archived
+;; - filter read
+;; - filter unread
 
 ;;;###autoload
 (defun read-later-archive-bookmark-at-point ()
