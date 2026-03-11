@@ -246,72 +246,7 @@ M-x read-later-api-oauth-setup
 You should see success messages in your minibuffer.
 
 ## Usage
-
-### View Bookmarks
-
-To open the Instapaper bookmarks buffer:
-
-```elisp
-M-x read-later
-```
-
-This opens a tabulated list of your Instapaper bookmarks where you can:
-- Press `u` to refresh the list
-- Press `d` to delete the bookmark at point
-- Press `l` to load more bookmarks
-- View bookmark titles, reading progress, tags, and descriptions
-
-### Refresh Bookmarks
-
-If you have the bookmarks buffer open, you can refresh it.
-
-```elisp
-M-x read-later-update
-```
-
-### Load More Bookmarks
-Append more boomarks.
-
-```elisp
-M-x read-later-load-more
-```
-
-Or simply press `l` in the bookmarks buffer.
-### Mark Bookmark as Read
-
-With the bookmarks buffer open, place your cursor on a bookmark and run:
-
-```elisp
-M-x read-later-mark-read-at-point
-```
-
-This sets the bookmark's read progress to 100% (fully read).
-
-### Mark Bookmark as Unread
-
-To reset a bookmark's read progress back to 0%:
-
-```elisp
-M-x read-later-mark-unread-at-point
-```
-
-### Add URL at Point
-
-Place your cursor on a URL in any buffer and run:
-
-```elisp
-M-x read-later-add-url-at-point
-```
-
-### Add URL Interactively
-
-To manually enter a URL:
-
-```elisp
-M-x read-later-interactively-add-url
-```
-
-You'll be prompted to enter the URL in the minibuffer.
+Refer to the info docs.
 
 ### Integration with elfeed
 
