@@ -8,7 +8,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 - View your bookmarks and tags
 - Fully manage your bookmarks
   - Delete bookmarks
-  - Other management features (coming soon)
+  - Mark bookmarks as read or unread
 
 ## Full API Status
 The package currently supports OAuth 1.0 authentication with the Instapaper Full API. You can view a bookmark list and delete bookmarks. Other endpoints will be supported soon. Eventually, I would like to support other backends other than Instapaper.
@@ -246,46 +246,7 @@ M-x read-later-api-oauth-setup
 You should see success messages in your minibuffer.
 
 ## Usage
-
-### View Bookmarks
-
-To open the Instapaper bookmarks buffer:
-
-```elisp
-M-x read-later
-```
-
-This opens a tabulated list of your Instapaper bookmarks where you can:
-- Press `g` to refresh the list
-- View bookmark titles, reading progress, tags, and descriptions
-
-### Refresh Bookmarks
-
-If you have the bookmarks buffer open, you can refresh it:
-
-```elisp
-M-x read-later-update
-```
-
-Or simply press `g` in the bookmarks buffer.
-
-### Add URL at Point
-
-Place your cursor on a URL in any buffer and run:
-
-```elisp
-M-x read-later-add-url-at-point
-```
-
-### Add URL Interactively
-
-To manually enter a URL:
-
-```elisp
-M-x read-later-interactively-add-url
-```
-
-You'll be prompted to enter the URL in the minibuffer.
+Refer to the info docs.
 
 ### Integration with elfeed
 

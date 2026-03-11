@@ -7,7 +7,7 @@
 @c %**end of header
 
 @copying
-This manual is for read-later (version 1.0.0).
+This manual is for read-later (version 1.5.0).
 
 Copyright @copyright{} 2025 Devin Davis
 
@@ -53,8 +53,7 @@ SOFTWARE.
 @node Top
 @top read-later
 
-read-later allows you to send URLs to your Instapaper account directly from
-Emacs with ease.
+read-later allows you to manage your Instapaper account with ease.
 
 @insertcopying
 @end ifnottex
@@ -434,6 +433,7 @@ Instapapier provides several interactive commands for managing your Instapaper b
 * Refreshing Bookmarks::        Update the bookmark list
 * Adding URLs at Point::        Save URL under cursor
 * Adding URLs Interactively::   Enter URL manually
+* Updating Bookmark Read Progress::   Mark your bookmarks read or unread
 @end menu
 
 @node Viewing Bookmarks
@@ -501,6 +501,31 @@ M-x read-later-interactively-add-url
 @end example
 
 You'll be prompted to enter the URL in the minibuffer.
+
+@node Updating Bookmark Read Progress
+@section Marking bookmark read
+@findex read-later-mark-read-at-point
+@cindex interactive read update
+
+To mark bookmark read:
+
+@example
+M-x read-later-mark-read-at-point
+@end example
+
+The bookmark at point will be updated to 100% read progress
+
+@section Marking bookmark unread
+@findex read-later-mark-unread-at-point
+@cindex interactive unread update
+
+To mark bookmark unread:
+
+@example
+M-x read-later-mark-unread-at-point
+@end example
+
+The bookmark at point will be updated to 0% read progress
 
 @node Integrations
 @chapter Integrations
