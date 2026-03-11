@@ -198,19 +198,14 @@
     (message (format "Updating read progress for: %S" id))
     (read-later--update-bookmark-read-progress id 0)))
 
-;; TODO Need to add toggle archived
-;; TODO Need to add column for archived status
-;; TODO Maybe just add filtering options generaly???
-;; - filter archived
-;; - filter read
-;; - filter unread
-
 ;;;###autoload
 (defun read-later-archive-bookmark-at-point ()
   "Arhive bookmark at point."
   (interactive)
   (let ((id (tabulated-list-get-id)))
-    (read-later--archive-bookmark id)))
+    (progn
+      (read-later--archive-bookmark id)
+      (read-later--remove-bookmarks (list id)))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
