@@ -41,6 +41,10 @@
 (require 'read-later-bookmarks)
 (require 'json)
 
+;; Keymap
+(defvar read-later-map (make-sparse-keymap)
+  "Read later keymap.")
+
 ;; Variables
 (defcustom read-later-update-limit 25
   "The Instapaper API limit query parameter value."
@@ -126,8 +130,6 @@
   (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
     (read-later-add-url url)))
 
-;;; Bookmarks List Functions
-
 ;; ========================================= BOOKMARK ACTION FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later ()
@@ -147,9 +149,9 @@
         (let ((params `(("limit" . ,(number-to-string read-later-update-limit)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
-                                       :callback (lambda (result)
-                                                   (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                                     (read-later--display-bookmarks bookmarks))))))))
+                                       :type "bookmark"
+                                       :callback (lambda (bookmarks)
+                                                   (read-later--display-bookmarks bookmarks)))))))
 
 ;;;###autoload
 (defun read-later-load-more ()
@@ -161,10 +163,10 @@
                         ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
-                                       :callback (lambda (result)
-                                                   (let ((bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                                     (read-later--append-bookmarks bookmarks)
-                                                     (message (format "  %S More Bookmarks loaded" read-later-append-limit)))))))))
+                                       :type "bookmark"
+                                       :callback (lambda (bookmarks)
+                                                   (read-later--append-bookmarks bookmarks)
+                                                   (message (format "  %S More Bookmarks loaded" read-later-append-limit))))))))
 
 ;;;###autoload
 (defun read-later-delete-bookmark-at-point ()
@@ -176,13 +178,11 @@
           (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
               (read-later-api-full-request 'bookmarks-delete
                                            :params `(("bookmark_id" . ,(number-to-string id)))
-                                           :callback (lambda (result)
-                                                       (let ((success (plist-get result :success)))
-                                                         (if success
-                                                             (progn
-                                                               (read-later--remove-bookmarks (list id))
-                                                               (message "Bookmark deleted: %s" id))
-                                                           (message "Failed to delete bookmark: %s" id))))))))))
+                                           :type "bookmark"
+                                           :callback (lambda ()
+                                                       (progn
+                                                         (read-later--remove-bookmarks (list id))
+                                                         (message "Bookmark deleted: %s" id)))))))))
 
 (defun read-later-mark-read-at-point ()
   "Mark the bookmark at point as read."
@@ -204,15 +204,11 @@
                                :params `(("bookmark_id" . ,(number-to-string id))
                                          ("progress" . ,(number-to-string progress))
                                          ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
-                               :callback (lambda (result)
-                                           (message (format "RESULT: %S" result))
-                                           (let ((success (plist-get result :success))
-                                                 (bookmarks (read-later--handle-request-body result :type "bookmark")))
-                                             (if success
-                                                 (progn
-                                                   (read-later--update-bookmark (car bookmarks))
-                                                   (message "Bookmark read progress updated"))
-                                               (message "Bookmark read progress update failed"))))))
+                               :type "bookmark"
+                               :callback (lambda (bookmarks)
+                                           (progn
+                                             (read-later--update-bookmark (car bookmarks))
+                                             (message "Bookmark read progress updated")))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()

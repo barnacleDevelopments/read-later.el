@@ -9,29 +9,8 @@
 (require 'json)
 (require 'cl-lib)
 
-(defvar read-later-map (make-sparse-keymap)
-  "Read later keymap.")
-
 (defvar read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
-
-(defun read-later--handle-request-body (result &rest args)
-  "Parse the JSON body from RESULT and extract items of TYPE.
-ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\"."
-  (let ((type (plist-get args :type))
-        (body (plist-get result :body)))
-    (if (plist-get result :success)
-        (let* ((json-object-type 'plist)
-               (json-key-type 'keyword)
-               (json-array-type 'list)
-               (parsed (json-read-from-string body))
-               ;; Filter the flat array for items matching the type
-               (items (cl-remove-if-not
-                       (lambda (item)
-                         (string= (plist-get item :type) type))
-                       parsed)))
-          items)
-      (error "Failed to fetch resource: %s" (plist-get result :message)))))
 
 ;; ========================================= FORMATER FUNCTIONS =========================================
 (defun read-later--format-progress (progress)

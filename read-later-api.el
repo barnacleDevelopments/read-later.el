@@ -299,6 +299,24 @@ Returns the oauth-access-token object on success, or nil on failure."
           (error
            (error "Failed to obtain OAuth access token: %s" (error-message-string err))))))))
 
+(defun read-later-api--handle-response (result &rest args)
+  "Parse the JSON body from RESULT and extract items of TYPE.
+ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\"."
+  (let ((type (plist-get args :type))
+        (body (plist-get result :body)))
+    (if (plist-get result :success)
+        (let* ((json-object-type 'plist)
+               (json-key-type 'keyword)
+               (json-array-type 'list)
+               (parsed (json-read-from-string body))
+               ;; Filter the flat array for items matching the type
+               (items (cl-remove-if-not
+                       (lambda (item)
+                         (string= (plist-get item :type) type))
+                       parsed)))
+          items)
+      (error "Failed to fetch resource: %s" (plist-get result :message)))))
+
 (defun read-later-api-full-request (endpoint &rest args)
   "Make a Full API request to ENDPOINT with ARGS.
 Uses OAuth 1.0 authentication with HMAC-SHA1 signing.
@@ -309,6 +327,7 @@ ARGS is a plist that can contain:
   :params - alist of parameters to send (e.g., '((folder_id . \"123\") (limit . \"25\")))
   :id - optional ID for endpoints that require it (e.g., bookmark ID for highlights)
   :callback - function called with response plist (:success :status-code :message :body)
+  :type - a string denoting the type of the resource
 
 The function automatically uses the cached OAuth token from `read-later-api-oauth-setup'.
 If no token is cached, it will automatically call `read-later-api-oauth-setup' first.
@@ -326,6 +345,7 @@ Example usage:
                                :id \"bookmark-id\"
                                :callback #'my-handler)"
   (let* ((params (plist-get args :params))
+         (type (plist-get args :type))
          (id (plist-get args :id))
          (callback (plist-get args :callback))
          (endpoint-info (alist-get endpoint read-later-api--endpoints))
@@ -354,9 +374,13 @@ Example usage:
        api-url
        (when callback
          (lambda (response)
-           (let ((result (read-later-api--parse-response response)))
-             (kill-buffer (current-buffer))
-             (funcall callback result))))
+           (let* ((result (read-later-api--parse-response response))
+                  (success (plist-get result :success)))
+             (if success
+                 (progn
+                   (kill-buffer (current-buffer))
+                   (funcall callback (read-later-api--handle-response result :type type)))
+               (message (format "Request failed against %S. Please try again or verify that your crendentials are correct." type))))))
        nil))))
 
 (provide 'read-later-api)
