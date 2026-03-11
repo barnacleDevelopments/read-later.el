@@ -273,21 +273,6 @@ In the elfeed search buffer, place your cursor on an entry and run:
 M-x read-later-add-elfeed-entry-at-point
 ```
 
-Suggested keybinding for elfeed-search-mode:
-
-```elisp
-(use-package elfeed
-  :ensure t
-  :bind (:map elfeed-search-mode-map
-              ("i" . read-later-add-elfeed-entry-at-point))
-  :config
-  (setq elfeed-feeds
-        '("https://example.com/feed.xml"
-          "https://another-blog.com/rss")))
-```
-
-Now you can press `i` on any entry in elfeed to save it to Instapaper.
-
 ## Complete Configuration Example
 
 Here's a complete example configuration:
