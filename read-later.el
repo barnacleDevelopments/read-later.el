@@ -198,17 +198,14 @@
     (message (format "Updating read progress for: %S" id))
     (read-later--update-bookmark-read-progress id 0)))
 
-(defun read-later--update-bookmark-read-progress (id progress)
-  "Update the bookmarks with ID to read PROGRESS."
-  (read-later-api-full-request 'bookmarks-update-progress
-                               :params `(("bookmark_id" . ,(number-to-string id))
-                                         ("progress" . ,(number-to-string progress))
-                                         ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
-                               :type "bookmark"
-                               :callback (lambda (bookmarks)
-                                           (progn
-                                             (read-later--update-bookmark (car bookmarks))
-                                             (message "Bookmark read progress updated")))))
+;;;###autoload
+(defun read-later-archive-bookmark-at-point ()
+  "Arhive bookmark at point."
+  (interactive)
+  (let ((id (tabulated-list-get-id)))
+    (progn
+      (read-later--archive-bookmark id)
+      (read-later--remove-bookmarks (list id)))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
@@ -223,34 +220,6 @@
             (browse-url url)
           (message "Warning: No URL found for this bookmark")))))
 
-(defun read-later--display-bookmarks (bookmarks)
-  "Display BOOKMARKS in the buffer."
-  (with-current-buffer "*Instapaper Bookmarks*"
-    (setq read-later--bookmarks-data bookmarks)
-    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
-    (tabulated-list-print t)))
-
-(defun read-later--append-bookmarks (bookmarks)
-  "Append BOOKMARKS to existing data."
-  (setq read-later--bookmarks-data
-        (append read-later--bookmarks-data bookmarks))
-  (read-later--display-bookmarks read-later--bookmarks-data))
-
-(defun read-later--remove-bookmarks (bookmark_ids)
-  "Remove BOOKMARK_IDS list."
-  (setq read-later--bookmarks-data
-        (cl-remove-if (lambda (b) (member (plist-get b :bookmark_id) bookmark_ids))
-                      read-later--bookmarks-data))
-  (read-later--display-bookmarks read-later--bookmarks-data))
-
-(defun read-later--update-bookmark (bookmark)
-  "Update BOOKMARK fields inside tabulated list. The bookmark must have an ID."
-  (interactive)
-  (let ((bookmark_id (plist-get bookmark :bookmark_id)))
-    (progn
-      (read-later--remove-bookmarks (list bookmark_id))
-      (setq read-later--bookmarks-data (cons bookmark read-later--bookmarks-data))
-      (read-later--display-bookmarks read-later--bookmarks-data))))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 

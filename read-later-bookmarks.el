@@ -8,6 +8,7 @@
 (require 'tabulated-list)
 (require 'json)
 (require 'cl-lib)
+(require 'read-later-api)
 
 (defvar read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
@@ -38,6 +39,71 @@
                           (read-later--format-tags (plist-get bookmark :tags))
                           (or (plist-get bookmark :description) ""))))
           bookmarks))
+
+
+;; ========================================= ACTION FUNCTIONS =========================================
+(defun read-later--update-bookmark-read-progress (id progress)
+  "Update the bookmarks with ID to read PROGRESS."
+  (read-later-api-full-request 'bookmarks-update-progress
+                               :params `(("bookmark_id" . ,(number-to-string id))
+                                         ("progress" . ,(number-to-string progress))
+                                         ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
+                               :type "bookmark"
+                               :callback (lambda (bookmarks)
+                                           (progn
+                                             (read-later--update-bookmark (car bookmarks))
+                                             (message "Bookmark read progress updated")))))
+
+(defun read-later--archive-bookmark (id)
+  "Archive bookmark with ID."
+  (read-later-api-full-request 'bookmarks-archive
+                               :params `(("bookmark_id" . ,(number-to-string id)))
+                               :type "bookmark"
+                               :callback (lambda (bookmarks)
+                                           (progn
+                                             (read-later--update-bookmark (car bookmarks))
+                                             (message "Bookmark archived")))))
+
+
+(defun read-later--unarchive-bookmark (id)
+  "Archive bookmark with ID."
+  (read-later-api-full-request 'bookmarks-unarchive
+                               :params `(("bookmark_id" . ,(number-to-string id))))
+  :type "bookmark"
+  :callback (lambda (bookmarks)
+              (progn
+                (read-later--update-bookmark (car bookmarks))
+                (message "Bookmark unarchived"))))
+
+
+(defun read-later--display-bookmarks (bookmarks)
+  "Display BOOKMARKS in the buffer."
+  (with-current-buffer "*Instapaper Bookmarks*"
+    (setq read-later--bookmarks-data bookmarks)
+    (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
+    (tabulated-list-print t)))
+
+(defun read-later--append-bookmarks (bookmarks)
+  "Append BOOKMARKS to existing data."
+  (setq read-later--bookmarks-data
+        (append read-later--bookmarks-data bookmarks))
+  (read-later--display-bookmarks read-later--bookmarks-data))
+
+(defun read-later--remove-bookmarks (bookmark_ids)
+  "Remove BOOKMARK_IDS list."
+  (setq read-later--bookmarks-data
+        (cl-remove-if (lambda (b) (member (plist-get b :bookmark_id) bookmark_ids))
+                      read-later--bookmarks-data))
+  (read-later--display-bookmarks read-later--bookmarks-data))
+
+(defun read-later--update-bookmark (bookmark)
+  "Update BOOKMARK fields inside tabulated list. The bookmark must have an ID."
+  (interactive)
+  (let ((bookmark_id (plist-get bookmark :bookmark_id)))
+    (progn
+      (read-later--remove-bookmarks (list bookmark_id))
+      (setq read-later--bookmarks-data (cons bookmark read-later--bookmarks-data))
+      (read-later--display-bookmarks read-later--bookmarks-data))))
 
 (provide 'read-later-bookmarks)
 

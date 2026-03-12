@@ -7,7 +7,7 @@
 @c %**end of header
 
 @copying
-This manual is for read-later (version 1.5.0).
+This manual is for read-later (version 1.7.0).
 
 Copyright @copyright{} 2025 Devin Davis
 
@@ -40,7 +40,7 @@ SOFTWARE.
 @finalout
 @titlepage
 @title read-later Manual
-@subtitle for version 1.0.0
+@subtitle for version 1.7.0
 @author Devin Davis
 @page
 @vskip 0pt plus 1filll
@@ -94,7 +94,7 @@ Add URLs interactively or directly from point
 
 @itemize @bullet
 @item
-Emacs 24.3 or higher
+Emacs 29.1 or higher
 @item
 An Instapaper account (@pxref{Setting Up Instapaper})
 @item
@@ -429,11 +429,13 @@ You should see ``@samp{✓ Authentication successful!}'' in the minibuffer.
 Instapapier provides several interactive commands for managing your Instapaper bookmarks.
 
 @menu
-* Viewing Bookmarks::           View and manage your bookmarks
-* Refreshing Bookmarks::        Update the bookmark list
-* Adding URLs at Point::        Save URL under cursor
-* Adding URLs Interactively::   Enter URL manually
+* Viewing Bookmarks::                 View and manage your bookmarks
+* Refreshing Bookmarks::              Update the bookmark list
+* Adding URLs at Point::              Save URL under cursor
+* Adding URLs Interactively::         Enter URL manually
 * Updating Bookmark Read Progress::   Mark your bookmarks read or unread
+* Archiving Bookmarks::                 Archive or Unarchive bookmark
+
 @end menu
 
 @node Viewing Bookmarks
@@ -513,7 +515,7 @@ To mark bookmark read:
 M-x read-later-mark-read-at-point
 @end example
 
-The bookmark at point will be updated to 100% read progress
+The bookmark at point will be updated to 100% read progress.
 
 @section Marking bookmark unread
 @findex read-later-mark-unread-at-point
@@ -525,9 +527,30 @@ To mark bookmark unread:
 M-x read-later-mark-unread-at-point
 @end example
 
-The bookmark at point will be updated to 0% read progress
+The bookmark at point will be updated to 0% read progress.
+
+@node Archiving Bookmarks
+@section Archive bookmark
+@findex read-later-archive-bookmark-at-point
+@cindex interactive archive
+@example
+M-x read-later-archive-bookmark-at-point
+@end example
+
+The bookmark at point with be archived.
+
+@section Unarchive bookmark
+@findex read-later-unarchive-bookmark-at-point
+@cindex interactive unarchive
+
+@example
+M-x read-later-unarchive-bookmark-at-point
+@end example
+
+The bookmark at point will be unarchived.
 
 @node Integrations
+
 @chapter Integrations
 
 @cindex integrations
