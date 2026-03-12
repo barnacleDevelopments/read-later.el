@@ -56,6 +56,31 @@
   :type 'integer
   :group 'read-later)
 
+(defcustom read-later-default-tag nil
+  "The default tags applied to BOOKMARKS query.
+Only filters if folder is not specified."
+  :type 'string
+  :group 'read-later)
+
+(defcustom read-later-default-folder "archive"
+  "The default folders applied to BOOKMARKS query."
+  :type 'string
+  :group 'read-later)
+
+(defvar read-later-folder read-later-default-folder
+  "Current active folder for filtering.")
+
+(defvar read-later-tag read-later-default-tag
+  "Current active tags for filtering.")
+
+(defun read-later-reset-folders ()
+  "Reset active folders to defaults."
+  (setq read-later-folder read-later-default-folder))
+
+(defun read-later-reset-tags ()
+  "Reset active tags to defaults."
+  (setq read-later-tag read-later-default-tag))
+
 ;; ========================================= READ LATER MODE =========================================
 
 (defvar read-later-mode-map
@@ -110,19 +135,12 @@
 
 ;; ========================================= ANY BUFFER FUNCTIONS =========================================
 ;;;###autoload
-(defun read-later-add-url-at-point()
-  "Add the URL at point to Instapaper."
-  (interactive)
-  (let ((url (thing-at-point 'url)))
-    (read-later-add-url url)))
-
-;;;###autoload
 (defun read-later-interactively-add-url(url)
   "Add URL interactively."
   (interactive "sArticle URL:")
   (read-later-add-url url))
 
-;; ========================================= ELFEED FUNCTIONS =========================================
+;; ========================================= ELFEED ACTION FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-add-elfeed-entry-at-point()
   "Add the elfeed entry at point in show buffer."
@@ -131,6 +149,13 @@
     (read-later-add-url url)))
 
 ;; ========================================= BOOKMARK ACTION FUNCTIONS =========================================
+;;;###autoload
+(defun read-later-add-url-at-point()
+  "Add the URL at point to Instapaper."
+  (interactive)
+  (let ((url (thing-at-point 'url)))
+    (read-later-add-url url)))
+
 ;;;###autoload
 (defun read-later ()
   "Enter read-later. Open the bookmarks table buffer."
@@ -146,7 +171,11 @@
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (message "Refreshing bookmarks...")
-        (let ((params `(("limit" . ,(number-to-string read-later-update-limit)))))
+        (let ((params `(("limit" . ,(number-to-string read-later-update-limit))
+                        ("tag" . ,read-later-tag))))
+          ;; TODO conditionally add folder if speicfied 
+
+          (message "FOLDER: %S" read-later-folder)
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :type "bookmark"
@@ -160,7 +189,9 @@
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
-                        ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data)))))
+                        ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data))
+                        ("tag". ,read-later-tag))))
+          ;; TODO conditionally add folder if speicfied 
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :type "bookmark"
