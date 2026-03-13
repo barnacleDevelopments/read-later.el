@@ -1,4 +1,4 @@
-;;; Return an HMAC-SHA1 authentication code for KEY and MESSAGE.
+;;; Return an HMAC-SHA1 authentication code for KEY and MESSAGE.  -*- lexical-binding: t; -*-
 ;;; 
 ;;; KEY and MESSAGE must be unibyte strings.  The result is a unibyte
 ;;; string.  Use the function `encode-hex-string' or the function
