@@ -31,7 +31,7 @@
 
 (require 'sha1)
 
-(defun hmac-sha1 (key message)
+(defun read-later-hmac-sha1 (key message)
   "Return an HMAC-SHA1 authentication code for KEY and MESSAGE.
 
 KEY and MESSAGE must be unibyte strings.  The result is a unibyte
@@ -100,4 +100,6 @@ For keys and values that are already unibyte, the
                             nil nil t))
               nil nil t)))))
 
-(provide 'hmac-sha1)
+(provide 'read-later-hmac-sha1)
+
+;;; read-later-hmac-sha1.el ends here
