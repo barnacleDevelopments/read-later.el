@@ -373,8 +373,6 @@ Example usage:
             (when params
               '(("Content-Type" . "application/x-www-form-urlencoded")))))
 
-      ;; Set oauth-post-vars-alist as a dynamic variable (not a let binding)
-      ;; so oauth-url-retrieve can access it
       ;; need to convert the car cell to string for api call
       (setq oauth-post-vars-alist (seq-map (lambda (param)
                                              (let* ((param-car (symbol-name (car param)))
