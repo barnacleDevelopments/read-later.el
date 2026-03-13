@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version:
+          - "28.2"
+          - "29.4"
+          - "snapshot"
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+
+      - name: Run ERT tests
+        run: |
+          emacs -batch \
+            -l ert \
+            -l my-package.el \
+            -l test/all_tests.el \
+            -f ert-run-tests-batch-and-exit
