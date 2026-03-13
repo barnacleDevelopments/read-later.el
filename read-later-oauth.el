@@ -88,16 +88,16 @@
 
 (require 'url)
 (require 'url-util)
-(require 'hmac-sha1)
+(require 'read-later-hmac-sha1)
 (require 'hex-util)
 (require 'cl-lib)
 
-(defvar oauth-nonce-function nil
+(defvar read-later-oauth-nonce-function nil
   "Fuction used to generate nonce.
 
-Use (sasl-unique-id) if available otherwise oauth-internal-make-nonce")
+Use (sasl-unique-id) if available otherwise read-later-oauth-internal-make-nonce")
 
-(defvar oauth-hmac-sha1-param-reverse nil)
+(defvar read-later-oauth-hmac-sha1-param-reverse nil)
 
 ;; Initialize at load time, not just compile time
 (require 'cl-lib)
@@ -109,54 +109,54 @@ Use (sasl-unique-id) if available otherwise oauth-internal-make-nonce")
 ;; To deal with this we have this nice test to figure out which one
 ;; is actually available to us. Hopefully things will *just work*.
 (when (equal
-       (encode-hex-string (hmac-sha1 "Hi There" (make-string 20 ?\x0b)))
+       (encode-hex-string (read-later-hmac-sha1 "Hi There" (make-string 20 ?\x0b)))
        "b617318655057264e28bc0b6fb378c8ef146be00")
-  (setq oauth-hmac-sha1-param-reverse t))
+  (setq read-later-oauth-hmac-sha1-param-reverse t))
 
 ;; Use sasl if available, otherwise make the nonce ourselves
 (if (require 'sasl nil t)
-    (setq oauth-nonce-function #'sasl-unique-id)
-  (setq oauth-nonce-function #'oauth-internal-make-nonce))
+    (setq read-later-oauth-nonce-function #'sasl-unique-id)
+  (setq read-later-oauth-nonce-function #'read-later-oauth-internal-make-nonce))
 
-(cl-defstruct oauth-request
+(cl-defstruct read-later-oauth-request
   "Container for request information.
 
 This includes both oauth header parameters as well as general
 request information (url and http-method)."
   params ; alist
-  token ; oauth-t
+  token ; read-later-oauth-t
   url (http-method "GET"))
 
-(cl-defstruct oauth-t
-  "Token used for both Unauth Request Token (6.1.2) and Access Token (6.3.2)"
+(cl-defstruct read-later-oauth-t
+  "Token used for both Unauth Request Token (6.1.2) and Access Token (6.3.2)."
   token token-secret)
 
-(cl-defstruct oauth-access-token
+(cl-defstruct read-later-oauth-access-token
   consumer-key consumer-secret auth-t)
 
-(defvar oauth-enable-browse-url t
-  "Specifies whether or not to use call browse-url for authorizing apps.
+(defvar read-later-oauth-enable-browse-url t
+  "Specifies whether or not to use call \='browse-url\' for authorizing apps.
 
 Disabling is useful for remote machines.
 Most of the time you will want this set to t.")
 
-(defvar oauth-use-curl t
-  "Specifies whether to use curl (external) or url-request (emacs internal) for requests.
+(defvar read-later-oauth-use-curl t
+  "Specifies whether to use curl (external) or url-request (Emacs internal) for requests.
 
 It is generally recomended that you use curl for your requests.")
 
-(defvar oauth-curl-insecure t
+(defvar read-later-oauth-curl-insecure t
   "Use the curl insecure flag (-k) which ignores ssl certificate errors.")
 
-(defvar oauth-post-vars-alist nil
+(defvar read-later-oauth-post-vars-alist nil
   "Alist containing key/vals for POSTing (x-www-form-urlencoded) requests.")
 
-(defvar oauth-callback-url "oob"
+(defvar read-later-oauth-callback-url "oob"
   "Callback url for the server to redirect the client after the client authorizes the application.
 
 This is mainly intended for web apps. Most client side apps will use 'oob' instead of a url.")
 
-(defun oauth-authorize-app (consumer-key consumer-secret request-url access-url authorize-url)
+(defun read-later-oauth-authorize-app (consumer-key consumer-secret request-url access-url authorize-url)
   "Authorize application.
 
 CONSUMER-KEY and CONSUMER-SECRET are the key and secret issued by the
@@ -170,121 +170,121 @@ it has recieved an unauthorized token.
 This will fetch an unauthorized token, prompt the user to authorize this
 application and the fetch the authorized token.
 
-Returns an oauth-access-token if everything was successful."
+Returns an read-later-oauth-access-token if everything was successful."
   (let ((auth-t) (auth-req) (unauth-t) (auth-url) (access-token)
-        (unauth-req (oauth-sign-request-hmac-sha1
-                     (oauth-make-request request-url consumer-key)
+        (unauth-req (read-later-oauth-sign-request-hmac-sha1
+                     (read-later-oauth-make-request request-url consumer-key)
                      consumer-secret)))
-    (setq unauth-t (oauth-fetch-token unauth-req))
+    (setq unauth-t (read-later-oauth-fetch-token unauth-req))
     (setq auth-url (format "%s?oauth_token=%s"
-                           authorize-url (oauth-t-token unauth-t)))
-    (if oauth-enable-browse-url (browse-url auth-url))
+                           authorize-url (read-later-oauth-t-token unauth-t)))
+    (if read-later-oauth-enable-browse-url (browse-url auth-url))
     (read-string (concat
                   "Please authorize this application by visiting: " auth-url
                   " \nPress enter once you have done so: "))
     (setq access-token (read-string
                         "Please enter the provided code: "))
     (setq auth-req
-          (oauth-sign-request-hmac-sha1
-           (oauth-make-request
+          (read-later-oauth-sign-request-hmac-sha1
+           (read-later-oauth-make-request
             (concat access-url "?oauth_verifier=" access-token)
             consumer-key unauth-t)
            consumer-secret))
-    (setq auth-t (oauth-fetch-token auth-req))
-    (make-oauth-access-token :consumer-key consumer-key
-                             :consumer-secret consumer-secret
-                             :auth-t auth-t)))
+    (setq auth-t (read-later-oauth-fetch-token auth-req))
+    (make-read-later-oauth-access-token :consumer-key consumer-key
+                                        :consumer-secret consumer-secret
+                                        :auth-t auth-t)))
 
-(defun oauth-url-retrieve (access-token url &optional async-callback cb-data)
+(defun read-later-oauth-url-retrieve (access-token url &optional async-callback cb-data)
   "Like url retrieve, with url-request-extra-headers set to the necessary
 oauth headers."
-  (let ((req (oauth-make-request
+  (let ((req (read-later-oauth-make-request
               url
-              (oauth-access-token-consumer-key access-token)
-              (oauth-access-token-auth-t access-token))))
-    (setf (oauth-request-http-method req) (or url-request-method "GET"))
-    (when oauth-post-vars-alist
-      (setf (oauth-request-params req)
-            (append (oauth-request-params req) oauth-post-vars-alist)))
-    (oauth-sign-request-hmac-sha1
-     req (oauth-access-token-consumer-secret access-token))
+              (read-later-oauth-access-token-consumer-key access-token)
+              (read-later-oauth-access-token-auth-t access-token))))
+    (setf (read-later-oauth-request-http-method req) (or url-request-method "GET"))
+    (when read-later-oauth-post-vars-alist
+      (setf (read-later-oauth-request-params req)
+            (append (read-later-oauth-request-params req) read-later-oauth-post-vars-alist)))
+    (read-later-oauth-sign-request-hmac-sha1
+     req (read-later-oauth-access-token-consumer-secret access-token))
     (let* ((url-request-extra-headers (if url-request-extra-headers
                                           (append url-request-extra-headers
-                                                  (oauth-request-to-header req))
-                                        (oauth-request-to-header req)))
-           (url-request-method (oauth-request-http-method req))
-           (url-request-data (when oauth-post-vars-alist
+                                                  (read-later-oauth-request-to-header req))
+                                        (read-later-oauth-request-to-header req)))
+           (url-request-method (read-later-oauth-request-http-method req))
+           (url-request-data (when read-later-oauth-post-vars-alist
                                (mapconcat (lambda (pair)
                                             (concat (url-hexify-string (car pair)) "="
                                                     (url-hexify-string (cdr pair))))
-                                          oauth-post-vars-alist
+                                          read-later-oauth-post-vars-alist
                                           "&"))))
       (cond
-       (async-callback (url-retrieve (oauth-request-url req)
+       (async-callback (url-retrieve (read-later-oauth-request-url req)
                                      async-callback cb-data))
-       (oauth-use-curl (oauth-curl-retrieve (oauth-request-url req)))
-       (t (url-retrieve-synchronously (oauth-request-url req)))))))
+       (read-later-oauth-use-curl (read-later-oauth-curl-retrieve (read-later-oauth-request-url req)))
+       (t (url-retrieve-synchronously (read-later-oauth-request-url req)))))))
 
-(defun oauth-fetch-url (access-token url)
+(defun read-later-oauth-fetch-url (access-token url)
   "Wrapper around url-retrieve-synchronously using the the authorized-token
 to authenticate.
 
 This is intended for simple get reqests.
 Returns a buffer of the xresponse."
-  (oauth-url-retrieve access-token url))
+  (read-later-oauth-url-retrieve access-token url))
 
-(defun oauth-post-url (access-token url post-vars-alist)
+(defun read-later-oauth-post-url (access-token url post-vars-alist)
   "Wrapper around url-retrieve-synchronously using the the authorized-token
 to authenticate.
 
 This is intended for simple post reqests.
 Returns a buffer of the response."
   (let ((url-request-method "POST")
-        (oauth-post-vars-alist post-vars-alist))
-    (oauth-url-retrieve access-token url)))
+        (read-later-oauth-post-vars-alist post-vars-alist))
+    (read-later-oauth-url-retrieve access-token url)))
 
-(defun oauth-epoch-string ()
+(defun read-later-oauth-epoch-string ()
   "Returns a unix epoch timestamp string"
   (format "%d" (ftruncate (float-time (current-time)))))
 
-(defun oauth-make-nonce ()
-  (funcall oauth-nonce-function))
+(defun read-later-oauth-make-nonce ()
+  (funcall read-later-oauth-nonce-function))
 
-(defun oauth-internal-make-nonce ()
+(defun read-later-oauth-internal-make-nonce ()
   (number-to-string (random t)))
 
-(defun oauth-make-request (url consumer-key &optional token)
-  "Generates a oauth-request object with default values
+(defun read-later-oauth-make-request (url consumer-key &optional token)
+  "Generates a read-later-oauth-request object with default values
 
 Most consumers should call this function instead of creating
-oauth-request objects directly"
-  (make-oauth-request :url url
-                      :token token
-                      :params `(("oauth_consumer_key" . ,consumer-key)
-                                ("oauth_timestamp" . ,(oauth-epoch-string))
-                                ("oauth_nonce" . ,(oauth-make-nonce))
-                                ("oauth_callback" . ,oauth-callback-url)
-                                ("oauth_version" . "1.0"))))
+read-later-oauth-request objects directly"
+  (make-read-later-oauth-request :url url
+                                 :token token
+                                 :params `(("oauth_consumer_key" . ,consumer-key)
+                                           ("oauth_timestamp" . ,(read-later-oauth-epoch-string))
+                                           ("oauth_nonce" . ,(read-later-oauth-make-nonce))
+                                           ("oauth_callback" . ,read-later-oauth-callback-url)
+                                           ("oauth_version" . "1.0"))))
 
 ;; HMAC-SHA1 specific code
-(defun oauth-sign-request-hmac-sha1 (req secret)
+(defun read-later-oauth-sign-request-hmac-sha1 (req secret)
   "Adds signature and signature_method to req.
 
 This function is destructive"
-  (let ((token (oauth-request-token req)))
+  (let ((token (read-later-oauth-request-token req)))
     (push '("oauth_signature_method" . "HMAC-SHA1")
-          (oauth-request-params req))
+          (read-later-oauth-request-params req))
     (when token
-      (push `("oauth_token" . ,(oauth-t-token token))
-            (oauth-request-params req)))
-    (push `("oauth_signature" . ,(oauth-build-signature-hmac-sha1 req secret))
-          (oauth-request-params req)))
+      (push `("oauth_token" . ,(read-later-oauth-t-token token))
+            (read-later-oauth-request-params req)))
+    (push `("oauth_signature" . ,(read-later-oauth-build-signature-hmac-sha1 req secret))
+          (read-later-oauth-request-params req)))
   req)
 
-(defun oauth-build-signature-hmac-sha1 (req secret)
+(defun read-later-oauth-build-signature-hmac-sha1 (req secret)
   "Returns the signature for the given request object"
-  (let* ((token (oauth-request-token req))
-         (key-parts (list secret "&" (when token (oauth-t-token-secret token))))
+  (let* ((token (read-later-oauth-request-token req))
+         (key-parts (list secret "&" (when token (read-later-oauth-t-token-secret token))))
          ;; Ensure each part is unibyte before concatenating
          (key (apply 'concat
                      (mapcar (lambda (s)
@@ -299,49 +299,49 @@ This function is destructive"
          ;; Ensure message is unibyte
          (message-unibyte (string-as-unibyte
                            (encode-coding-string
-                            (oauth-build-signature-basestring-hmac-sha1 req) 'utf-8)))
+                            (read-later-oauth-build-signature-basestring-hmac-sha1 req) 'utf-8)))
          (hmac-params (list key-unibyte message-unibyte)))
-    (if oauth-hmac-sha1-param-reverse (setq hmac-params (reverse hmac-params)))
-    (base64-encode-string (apply 'hmac-sha1 hmac-params))))
+    (if read-later-oauth-hmac-sha1-param-reverse (setq hmac-params (reverse hmac-params)))
+    (base64-encode-string (apply 'read-later-hmac-sha1 hmac-params))))
 
-(defun oauth-build-signature-basestring-hmac-sha1 (req)
+(defun read-later-oauth-build-signature-basestring-hmac-sha1 (req)
   "Returns the base string for the hmac-sha1 signing function"
-  (let ((base-url (oauth-extract-base-url req))
+  (let ((base-url (read-later-oauth-extract-base-url req))
         (params (append
-                 (oauth-extract-url-params req)
-                 (copy-sequence (oauth-request-params req)))))
+                 (read-later-oauth-extract-url-params req)
+                 (copy-sequence (read-later-oauth-request-params req)))))
     (concat
-     (oauth-request-http-method req) "&"
-     (oauth-hexify-string base-url) "&"
-     (oauth-hexify-string
+     (read-later-oauth-request-http-method req) "&"
+     (read-later-oauth-hexify-string base-url) "&"
+     (read-later-oauth-hexify-string
       (mapconcat
        (lambda (pair)
-         (concat (car pair) "=" (oauth-hexify-string (cdr pair))))
+         (concat (car pair) "=" (read-later-oauth-hexify-string (cdr pair))))
        (sort params
              (lambda (a b) (string< (car a) (car b))))
        "&")))))
 
-(defun oauth-extract-base-url (req)
+(defun read-later-oauth-extract-base-url (req)
   "Returns just the base url.
 
 For example: http://example.com?param=1 returns http://example.com"
-  (let ((url (oauth-request-url req)))
+  (let ((url (read-later-oauth-request-url req)))
     (if (string-match "\\([^?]+\\)" url)
         (match-string 1 url)
       url)))
 
-(defun oauth-extract-url-params (req)
+(defun read-later-oauth-extract-url-params (req)
   "Returns an alist of param name . param value from the url"
-  (let ((url (oauth-request-url req)))
+  (let ((url (read-later-oauth-request-url req)))
     (when (string-match (regexp-quote "?") url)
       (mapcar (lambda (pair)
                 `(,(car pair) . ,(cadr pair)))
               (url-parse-query-string (substring url (match-end 0)))))))
 
-(defun oauth-fetch-token (req)
+(defun read-later-oauth-fetch-token (req)
   "Fetches a token based on the given request object"
-  (let ((token (make-oauth-t)))
-    (set-buffer (oauth-do-request req))
+  (let ((token (make-read-later-oauth-t)))
+    (set-buffer (read-later-oauth-do-request req))
     (goto-char (point-min))
     (let ((linebreak (search-forward "\n\n" nil t nil)))
       (when linebreak
@@ -356,37 +356,37 @@ For example: http://example.com?param=1 returns http://example.com"
              do
              (cond
               ((equal (car pair) "oauth_token_secret")
-               (setf (oauth-t-token-secret token) (cadr pair)))
+               (setf (read-later-oauth-t-token-secret token) (cadr pair)))
               ((equal (car pair) "oauth_token")
-               (setf (oauth-t-token token) (cadr pair)))))
+               (setf (read-later-oauth-t-token token) (cadr pair)))))
     token))
 
-(defun oauth-do-request (req)
+(defun read-later-oauth-do-request (req)
   "Make an http request to url using the request object to generate the oauth
 headers. Returns the http response buffer."
-  (if oauth-use-curl (oauth-do-request-curl req)
-    (oauth-do-request-emacs req)))
+  (if read-later-oauth-use-curl (read-later-oauth-do-request-curl req)
+    (read-later-oauth-do-request-emacs req)))
 
-(defun oauth-do-request-emacs (req)
+(defun read-later-oauth-do-request-emacs (req)
   "Make an http request to url using the request object to generate the oauth
 headers. Returns the http response buffer.
 
 This function uses the emacs function `url-retrieve' for the http connection."
-  (let ((url-request-extra-headers (oauth-request-to-header req))
-        (url-request-method (oauth-request-http-method req)))
-    (url-retrieve-synchronously (oauth-request-url req))))
+  (let ((url-request-extra-headers (read-later-oauth-request-to-header req))
+        (url-request-method (read-later-oauth-request-http-method req)))
+    (url-retrieve-synchronously (read-later-oauth-request-url req))))
 
-(defun oauth-do-request-curl (req)
+(defun read-later-oauth-do-request-curl (req)
   "Make an http request to url using the request object to generate the oauth
 headers. Returns the http response buffer.
 
 This function dispatches to an external curl process"
 
-  (let ((url-request-extra-headers (oauth-request-to-header req))
-        (url-request-method (oauth-request-http-method req)))
-    (oauth-curl-retrieve (oauth-request-url req))))
+  (let ((url-request-extra-headers (read-later-oauth-request-to-header req))
+        (url-request-method (read-later-oauth-request-http-method req)))
+    (read-later-oauth-curl-retrieve (read-later-oauth-request-url req))))
 
-(defun oauth-headers-to-curl (headers)
+(defun read-later-oauth-headers-to-curl (headers)
   "Converts header alist (like `url-request-extra-headers') to a string that
 can be fed to curl"
   (apply
@@ -395,37 +395,37 @@ can be fed to curl"
     (lambda (header) `("--header"
                        ,(concat (car header) ": " (cdr header)))) headers)))
 
-(defun oauth-curl-retrieve (url)
+(defun read-later-oauth-curl-retrieve (url)
   "Retrieve via curl"
   (url-gc-dead-buffers)
-  (set-buffer (generate-new-buffer " *oauth-request*"))
-  (let ((curl-args `("-s" ,(when oauth-curl-insecure "-k")
+  (set-buffer (generate-new-buffer " *read-later-oauth-request*"))
+  (let ((curl-args `("-s" ,(when read-later-oauth-curl-insecure "-k")
                      "-X" ,url-request-method
                      "-i" ,url
-                     ,@(when oauth-post-vars-alist
+                     ,@(when read-later-oauth-post-vars-alist
                          (apply
                           'append
                           (mapcar
                            (lambda (pair)
                              (list
                               "-d"
-                              (concat (oauth-hexify-string (car pair)) "="
-                                      (oauth-hexify-string (cdr pair)))))
-                           oauth-post-vars-alist)))
-                     ,@(oauth-headers-to-curl url-request-extra-headers))))
+                              (concat (read-later-oauth-hexify-string (car pair)) "="
+                                      (read-later-oauth-hexify-string (cdr pair)))))
+                           read-later-oauth-post-vars-alist)))
+                     ,@(read-later-oauth-headers-to-curl url-request-extra-headers))))
     (apply 'call-process "curl" nil t nil curl-args))
   (url-mark-buffer-as-dead (current-buffer))
   (current-buffer))
 
-(defun oauth-request-to-header (req)
+(defun read-later-oauth-request-to-header (req)
   "Given a requst will return a alist of header pairs. This can
 be consumed by `url-request-extra-headers'."
-  (let* ((params (copy-sequence (oauth-request-params req)))
+  (let* ((params (copy-sequence (read-later-oauth-request-params req)))
          ;; Filter to only include oauth_* parameters in Authorization header
-         (oauth-params (cl-remove-if-not
-                        (lambda (pair)
-                          (string-prefix-p "oauth_" (car pair)))
-                        params)))
+         (read-later-oauth-params (cl-remove-if-not
+                                   (lambda (pair)
+                                     (string-prefix-p "oauth_" (car pair)))
+                                   params)))
     (cons
      (cons
       "Authorization"
@@ -434,11 +434,11 @@ be consumed by `url-request-extra-headers'."
               (lambda (pair)
                 (format ", %s=\"%s\""
                         (car pair)
-                        (oauth-hexify-string (cdr pair))))
-              (sort oauth-params
+                        (read-later-oauth-hexify-string (cdr pair))))
+              (sort read-later-oauth-params
                     (lambda (a b) (string< (car a) (car b))))))) '())))
 
-(defconst oauth-unreserved-chars
+(defconst read-later-oauth-unreserved-chars
   '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m
     ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y ?z
     ?A ?B ?C ?D ?E ?F ?G ?H ?I ?J ?K ?L ?M
@@ -447,11 +447,11 @@ be consumed by `url-request-extra-headers'."
     ?- ?_ ?. ?~ )
   "A list of characters that are _NOT_ reserved for oauth.")
 
-(defun oauth-hexify-string (string)
+(defun read-later-oauth-hexify-string (string)
   "Similar to hexify-string from `url-utils.el' except the hex
 characters are upper case and the reserved char set is slightly different."
   (mapconcat (lambda (byte)
-               (if (memq byte oauth-unreserved-chars)
+               (if (memq byte read-later-oauth-unreserved-chars)
                    (char-to-string byte)
                  (format "%%%02X" byte)))
              (if (multibyte-string-p string)
@@ -459,6 +459,6 @@ characters are upper case and the reserved char set is slightly different."
                string)
              ""))
 
-(provide 'oauth)
+(provide 'read-later-oauth)
 
-;;; oauth.el ends here
+;;; read-later-oauth.el ends here

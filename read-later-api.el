@@ -36,7 +36,7 @@
 
 (require 'url)
 (require 'auth-source)
-(require 'oauth)
+(require 'read-later-oauth)
 
 ;;; Customization
 
@@ -267,27 +267,27 @@ Returns the oauth-access-token object on success, or nil on failure."
 
     ;; Create OAuth request for xAuth access token
     (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
-           (req (oauth-make-request access-token-url consumer-key))
+           (req (read-later-oauth-make-request access-token-url consumer-key))
            (xauth-params `(("x_auth_mode" . "client_auth")
                            ("x_auth_username" . ,username)
                            ("x_auth_password" . ,password))))
 
       ;; Set HTTP method to POST (required by Instapaper)
-      (setf (oauth-request-http-method req) "POST")
+      (setf (read-later-oauth-request-http-method req) "POST")
 
       ;; Add xAuth parameters to the request params for signature calculation
-      (setf (oauth-request-params req)
-            (append (oauth-request-params req) xauth-params))
+      (setf (read-later-oauth-request-params req)
+            (append (read-later-oauth-request-params req) xauth-params))
 
       ;; Sign the request with HMAC-SHA1
-      (oauth-sign-request-hmac-sha1 req consumer-secret)
+      (read-later-oauth-sign-request-hmac-sha1 req consumer-secret)
 
       ;; Fetch the access token with xAuth params in POST body
-      (let ((oauth-post-vars-alist xauth-params))
+      (let ((read-later-oauth-post-vars-alist xauth-params))
         (condition-case err
-            (let ((token (oauth-fetch-token req)))
+            (let ((token (read-later-oauth-fetch-token req)))
               (setq read-later-api--oauth-access-token
-                    (make-oauth-access-token
+                    (make-read-later-oauth-access-token
                      :consumer-key consumer-key
                      :consumer-secret consumer-secret
                      :auth-t token))
@@ -362,10 +362,10 @@ Example usage:
 
       ;; Set oauth-post-vars-alist as a dynamic variable (not a let binding)
       ;; so oauth-url-retrieve can access it
-      (setq oauth-post-vars-alist params)
+      (setq read-later-oauth-post-vars-alist params)
 
       ;; Use oauth.el's url-retrieve wrapper which handles signing
-      (oauth-url-retrieve
+      (read-later-oauth-url-retrieve
        read-later-api--oauth-access-token
        api-url
        (when callback
