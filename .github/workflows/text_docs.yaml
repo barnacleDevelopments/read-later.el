@@ -1,0 +1,28 @@
+name: Build Texinfo Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.texi"
+      - "**.texinfo"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "**.texi"
+      - "**.texinfo"
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Texinfo and TeX dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texinfo texlive texlive-plain-generic
+
+      - name: Build Info file
+        run: makeinfo read-later.texi -o read-later.info
