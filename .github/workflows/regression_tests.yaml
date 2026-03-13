@@ -27,6 +27,7 @@ jobs:
       - name: Run ERT tests
         run: |
           emacs -batch \
+            -L . \
             -l ert \
             -l read-later.el \
             -l test/all_tests.el \
