@@ -2,12 +2,6 @@ name: Build Texinfo Documentation
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "**.texi"
-      - "**.texinfo"
-      - ".github/workflows/docs.yml"
   pull_request:
     paths:
       - "**.texi"
