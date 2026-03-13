@@ -20,23 +20,6 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 
 ## Installation
 
-### Manual Installation
-
-1. Clone this repository or download `read-later.el`
-2. Add to your Emacs load path:
-
-```elisp
-(add-to-list 'load-path "/path/to/read-later")
-(require 'read-later)
-```
-
-### Using straight.el
-
-```elisp
-(straight-use-package
- '(read-later :type git :host github :repo "barnacleDevelopments/read-later.el"))
-```
-
 ### Using use-package with straight.el
 
 ```elisp
@@ -46,67 +29,6 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
              read-later-interactively-add-url
              read-later-add-elfeed-entry-at-point))
 ```
-
-### Spacemacs
-
-Add to your `dotspacemacs-additional-packages`:
-
-```elisp
-(defun dotspacemacs/layers ()
-  (setq-default
-   dotspacemacs-additional-packages
-   '((read-later :location (recipe
-                             :fetcher github
-                             :repo "barnacleDevelopments/read-later.el")))))
-```
-
-Then add keybindings in `dotspacemacs/user-config`:
-
-```elisp
-(defun dotspacemacs/user-config ()
-  (spacemacs/set-leader-keys
-    "ai a" 'read-later-add-url-at-point
-    "ai u" 'read-later-interactively-add-url)
-
-  ;; For elfeed integration
-  (with-eval-after-load 'elfeed
-    (define-key elfeed-search-mode-map (kbd "i") 'read-later-add-elfeed-entry-at-point)))
-```
-
-### Doom Emacs
-
-Add to your `packages.el`:
-
-```elisp
-;; ~/.doom.d/packages.el
-(package! read-later
-  :recipe (:host github :repo "barnacleDevelopments/read-later.el"))
-```
-
-Run `doom sync` after adding the package, then add to your `config.el`:
-
-```elisp
-;; ~/.doom.d/config.el
-(use-package! read-later
-  :commands (read-later
-             read-later-interactively-add-url
-             read-later-add-url-at-point
-             read-later-add-elfeed-entry-at-point)
-  :init
-  ;; Auth backend: 'authinfo (default) or '1password
-  (setq read-later-api-auth-backend 'authinfo)
-  ;; Override the credential lookup host if needed (default: "www.instapaper.com")
-  ;; (setq read-later-api-host "www.instapaper.com")
-  :config
-  (map! :leader
-        (:prefix-map ("R" . "read-later")
-         :desc "Open bookmarks"   "R" #'read-later
-         :desc "Add URL"          "a" #'read-later-interactively-add-url
-         :desc "Add URL at point" "p" #'read-later-add-url-at-point
-         :desc "Setup OAuth"      "o" #'read-later-api-oauth-setup)))
-```
-
-Restart Emacs after running `doom sync`.
 
 ## Setting Up Instapaper
 
