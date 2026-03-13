@@ -9,10 +9,8 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 - Fully manage your bookmarks
   - Delete bookmarks
   - Mark bookmarks as read or unread
+  - Mark bookmarks as archived
   - More comming soon!
-
-## Full API Status
-The package currently supports OAuth 1.0 authentication with the Instapaper Full API. You can view a bookmark list and delete bookmarks. Other endpoints will be supported soon. Eventually, I would like to support other backends other than Instapaper.
 
 ## Prerequisites
 
