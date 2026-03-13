@@ -1,4 +1,4 @@
-name: CI
+name: ERT Tests
 
 on:
   workflow_dispatch:
@@ -28,6 +28,6 @@ jobs:
         run: |
           emacs -batch \
             -l ert \
-            -l my-package.el \
+            -l read-later.el \
             -l test/all_tests.el \
             -f ert-run-tests-batch-and-exit
