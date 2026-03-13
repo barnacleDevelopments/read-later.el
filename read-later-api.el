@@ -341,11 +341,20 @@ Example usage:
                                :id \"bookmark-id\"
                                :callback #'my-handler)"
   (let* ((params (plist-get args :params))
+         (filtered-params (cl-remove-if (lambda (filter)
+                                          (not (cdr filter)))
+                                        params))
+         (tag-param (alist-get 'tag filtered-params))
+         (folder-param (alist-get 'folder_id filtered-params))
          (type (plist-get args :type))
          (id (plist-get args :id))
          (callback (plist-get args :callback))
          (endpoint-info (alist-get endpoint read-later-api--endpoints))
          (method (plist-get endpoint-info :method)))
+
+    ;; remove folder_id if tag provided (instapaper API only supports folder_id or tag)
+    (when (and tag-param folder-param)
+      (setq filtered-params (cl-remove-if (lambda (filter) (string= (car filter) 'folder_id)) filtered-params)))
 
     ;; Ensure we have an OAuth access token
     (unless read-later-api--oauth-access-token
