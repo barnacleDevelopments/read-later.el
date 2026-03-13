@@ -345,11 +345,20 @@ Example usage:
                                :id \"bookmark-id\"
                                :callback #'my-handler)"
   (let* ((params (plist-get args :params))
+         (filtered-params (cl-remove-if (lambda (filter)
+                                          (not (cdr filter)))
+                                        params))
+         (tag-param (alist-get 'tag filtered-params))
+         (folder-param (alist-get 'folder_id filtered-params))
          (type (plist-get args :type))
          (id (plist-get args :id))
          (callback (plist-get args :callback))
          (endpoint-info (alist-get endpoint read-later-api--endpoints))
          (method (plist-get endpoint-info :method)))
+
+    ;; remove folder_id if tag provided (instapaper API only supports folder_id or tag)
+    (when (and tag-param folder-param)
+      (setq filtered-params (cl-remove-if (lambda (filter) (string= (car filter) 'folder_id)) filtered-params)))
 
     ;; Ensure we have an OAuth access token
     (unless read-later-api--oauth-access-token
@@ -366,7 +375,11 @@ Example usage:
 
       ;; Set oauth-post-vars-alist as a dynamic variable (not a let binding)
       ;; so oauth-url-retrieve can access it
-      (setq oauth-post-vars-alist params)
+      ;; need to convert the car cell to string for api call
+      (setq oauth-post-vars-alist (seq-map (lambda (param)
+                                             (let* ((param-car (symbol-name (car param)))
+                                                    (param-cdr (cdr param)))
+                                               (cons param-car param-cdr))) filtered-params))
 
       ;; Use oauth.el's url-retrieve wrapper which handles signing
       (oauth-url-retrieve

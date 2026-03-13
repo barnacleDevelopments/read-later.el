@@ -195,6 +195,7 @@ Returns an oauth-access-token if everything was successful."
                              :consumer-secret consumer-secret
                              :auth-t auth-t)))
 
+;; TODO need to prefix all auth functions with "read-later-"
 (defun oauth-url-retrieve (access-token url &optional async-callback cb-data)
   "Like url retrieve, with url-request-extra-headers set to the necessary
 oauth headers."

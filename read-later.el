@@ -45,7 +45,7 @@
 (defvar read-later-map (make-sparse-keymap)
   "Read later keymap.")
 
-;; Variables
+;; Customize Variables
 (defcustom read-later-update-limit 25
   "The Instapaper API limit query parameter value."
   :type 'integer
@@ -62,11 +62,12 @@ Only filters if folder is not specified."
   :type 'string
   :group 'read-later)
 
-(defcustom read-later-default-folder "archive"
+(defcustom read-later-default-folder "unread"
   "The default folders applied to BOOKMARKS query."
   :type 'string
   :group 'read-later)
 
+;; Variables
 (defvar read-later-folder read-later-default-folder
   "Current active folder for filtering.")
 
@@ -82,7 +83,6 @@ Only filters if folder is not specified."
   (setq read-later-tag read-later-default-tag))
 
 ;; ========================================= READ LATER MODE =========================================
-
 (defvar read-later-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "u" 'read-later-update)
@@ -171,11 +171,9 @@ Only filters if folder is not specified."
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (message "Refreshing bookmarks...")
-        (let ((params `(("limit" . ,(number-to-string read-later-update-limit))
-                        ("tag" . ,read-later-tag))))
-          ;; TODO conditionally add folder if speicfied 
-
-          (message "FOLDER: %S" read-later-folder)
+        (let ((params `((limit . ,(number-to-string read-later-update-limit))
+                        (tag . ,read-later-tag)
+                        (folder_id . ,read-later-folder))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :type "bookmark"
@@ -190,8 +188,8 @@ Only filters if folder is not specified."
       (with-current-buffer "*Instapaper Bookmarks*"
         (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
                         ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data))
-                        ("tag". ,read-later-tag))))
-          ;; TODO conditionally add folder if speicfied 
+                        ("tag". ,read-later-tag)
+                        ("folder_id" . ,read-later-folder))))
           (read-later-api-full-request 'bookmarks-list
                                        :params params
                                        :type "bookmark"
