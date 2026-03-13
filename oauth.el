@@ -1,14 +1,14 @@
-;;; oauth.el --- Oauth library.
+;;; oauth.el --- Oauth library.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2009 Peter Sanford
 
 ;; Author: Peter Sanford <peter AT petersdanceparty.com>
-;; Version: 1.04
 ;; Keywords: comm
 ;; Contributors:
 ;;     Anthony Garcia <lagg@lavabit.com>
 ;;     Leo Shidai Liu <github.com/leoliu>
 ;;     Neil Roberts <bpeeluk@yahoo.co.uk>
+;;     Devin Davis <devdeveloper.ca>
 
 ;; This file is NOT part of GNU Emacs.
 

@@ -10,7 +10,7 @@
 (require 'cl-lib)
 (require 'read-later-api)
 
-(defvar read-later--bookmarks-data nil
+(defvar-local read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
 
 ;; ========================================= FORMATER FUNCTIONS =========================================

@@ -704,16 +704,6 @@ If you experience network problems:
 Check your internet connection
 
 @item
-Enable debug logging:
-
-@lisp
-(setq url-debug t)
-@end lisp
-
-@item
-Check the @file{*URL-DEBUG*} buffer for detailed error messages
-
-@item
 Verify you can reach Instapaper:
 
 @example

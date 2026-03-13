@@ -144,11 +144,10 @@ Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
   (or read-later-api--cached-credentials
       (setq read-later-api--cached-credentials
             (let ((creds (read-later-api--lookup-credentials read-later-api-host)))
-              (message "DEBUG get-credentials: host=%S user=%S password=%S"
-                       read-later-api-host
-                       (car creds)
-                       (cdr creds))
-              creds))))
+              read-later-api-host
+              (car creds)
+              (cdr creds))
+            creds))))
 
 (defun read-later-api--make-auth-header (credentials)
   "Create Basic Auth header from CREDENTIALS cons cell."
