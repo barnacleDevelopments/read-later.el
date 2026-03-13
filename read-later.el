@@ -210,7 +210,7 @@ Only filters if folder is not specified."
               (read-later-api-full-request 'bookmarks-delete
                                            :params `(("bookmark_id" . ,(number-to-string id)))
                                            :type "bookmark"
-                                           :callback (lambda ()
+                                           :callback (lambda (&rest _)
                                                        (progn
                                                          (read-later--remove-bookmarks (list id))
                                                          (message "Bookmark deleted: %s" id)))))))))
