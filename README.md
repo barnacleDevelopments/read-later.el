@@ -24,10 +24,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 
 ```elisp
 (use-package read-later
-  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later.el")
-  :commands (read-later-add-url-at-point
-             read-later-interactively-add-url
-             read-later-add-elfeed-entry-at-point))
+  :straight (read-later :type git :host github :repo "barnacleDevelopments/read-later.el"))
 ```
 
 ## Setting Up Instapaper
