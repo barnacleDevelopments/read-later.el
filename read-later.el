@@ -98,7 +98,6 @@ Only filters if folder is not specified."
                                ("Tags" 30 t)
                                ("Description" 100 t)])
   (setq tabulated-list-padding 2)
-  (setq tabulated-list-sort-key (cons "Title" nil))
   (tabulated-list-init-header))
 
 (defun read-later--create-bookmarks-buffer (bookmarks)

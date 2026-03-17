@@ -14,7 +14,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 
 ## Prerequisites
 
-- Emacs 29.1 or higher
+- Emacs 24.3 or higher
 - An Instapaper account (see setup below)
 - Instapaper OAuth Consumer Key and Secret (see instructions below)
 
