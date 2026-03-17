@@ -251,7 +251,6 @@ from 'www.instapaper.com' in auth-source, then uses xAuth to obtain an
 access token. The token is cached in `read-later-api--oauth-access-token'.
 
 Returns the oauth-access-token object on success, or nil on failure."
-  (interactive)
   (let* ((consumer-creds (read-later-api--get-oauth-consumer-credentials))
          (user-creds (read-later-api--get-credentials))
          (consumer-key (car consumer-creds))
@@ -377,15 +376,16 @@ Example usage:
       (read-later-oauth-url-retrieve
        read-later-api--oauth-access-token
        api-url
-       (when callback
-         (lambda (response)
-           (let* ((result (read-later-api--parse-response response))
-                  (success (plist-get result :success)))
-             (if success
-                 (progn
-                   (kill-buffer (current-buffer))
-                   (funcall callback (read-later-api--handle-response result :type type)))
-               (message (format "Request failed against %S. Please try again or verify that your crendentials are correct." type))))))
+       (if (and callback (not (equal endpoint 'account-verify)))
+           (lambda (response)
+             (let* ((result (read-later-api--parse-response response))
+                    (success (plist-get result :success)))
+               (if success
+                   (progn
+                     (kill-buffer (current-buffer))
+                     (funcall callback (read-later-api--handle-response result :type type)))
+                 (message (format "Request failed against %S. Please try again or verify that your crendentials are correct." type)))))
+         (lambda (&rest_)(funcall callback t)))
        nil))))
 
 (provide 'read-later-api)
