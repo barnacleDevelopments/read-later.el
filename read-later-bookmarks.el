@@ -98,7 +98,6 @@
 
 (defun read-later--update-bookmark (bookmark)
   "Update BOOKMARK fields inside tabulated list. The bookmark must have an ID."
-  (interactive)
   (let ((bookmark_id (plist-get bookmark :bookmark_id)))
     (progn
       (read-later--remove-bookmarks (list bookmark_id))

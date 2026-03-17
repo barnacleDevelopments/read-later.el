@@ -126,9 +126,9 @@ Only filters if folder is not specified."
   "Test Instapaper Full API Authentication."
   (interactive)
   (message "Testing full api authentication...")
-  (read-later-api-full-request 'verify-credentials
+  (read-later-api-full-request 'account-verify
                                :callback (lambda(result)
-                                           (if (plist-get result :success)
+                                           (if result
                                                (message "✓ Authentication successful!")
                                              (message "Authentication failed.")))))
 
