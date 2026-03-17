@@ -164,20 +164,10 @@ Only filters if folder is not specified."
     (switch-to-buffer "*Instapaper Bookmarks*")))
 
 ;;;###autoload
-(defun read-later-update ()
-  "Refreshes the bookmark buffer with the latest # bookmarks."
+(defun read-later-clear-table ()
+  "Clear bookmarks from table."
   (interactive)
-  (if(read-later-check-bookmarks-buffer)
-      (with-current-buffer "*Instapaper Bookmarks*"
-        (message "Refreshing bookmarks...")
-        (let ((params `((limit . ,(number-to-string read-later-update-limit))
-                        (tag . ,read-later-tag)
-                        (folder_id . ,read-later-folder))))
-          (read-later-api-full-request 'bookmarks-list
-                                       :params params
-                                       :type "bookmark"
-                                       :callback (lambda (bookmarks)
-                                                   (read-later--display-bookmarks bookmarks)))))))
+  (read-later--display-bookmarks nil))
 
 ;;;###autoload
 (defun read-later-load-more ()
