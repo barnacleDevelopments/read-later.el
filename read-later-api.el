@@ -90,7 +90,7 @@ Set by `read-later-api-oauth-setup'.")
     (bookmarks-archive . (:path "/api/1/bookmarks/archive" :method "POST"))
     (bookmarks-unarchive . (:path "/api/1/bookmarks/unarchive" :method "POST"))
     (bookmarks-move . (:path "/api/1/bookmarks/move" :method "POST"))
-    (bookmarks-text . (:path "/api/1/bookmarks/get_text" :method "POST"))
+    (bookmarks-text . (:path "/api/1/bookmarks/get_text" :method "POST")) ;;; Get's the HTML text of the bookmark
 
     ;; Folder endpoints
     (folders-list . (:path "/api/1/folders/list" :method "POST"))
@@ -105,7 +105,6 @@ Set by `read-later-api-oauth-setup'.")
   "Registry of all Instapaper API endpoints.")
 
 ;;; Helper functions
-
 (defun read-later-api--resolve-secret (secret)
   "Return the value of SECRET, calling it if it is a function."
   (if (functionp secret) (funcall secret) secret))

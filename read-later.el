@@ -10,7 +10,7 @@
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -238,6 +238,39 @@ Only filters if folder is not specified."
             (browse-url url)
           (message "Warning: No URL found for this bookmark")))))
 
+;;;###autoload
+(defun read-later-set-folder-filter ()
+  "Set the current folder filter."
+  (interactive)
+  (read-later-api-full-request 'folders-list
+                               :type "folder"
+                               :callback (lambda (folders)
+                                           (let ((folder (completing-read "Choose a folder: " (mapcar (lambda (item) (plist-get item :title)) folders))))
+                                             (setq read-later-folder folder)
+                                             (read-later-clear-table)
+                                             (read-later-load-more)))))
+
+(defun read-later-set-tag-filter ()
+  "Set the current tag filter."
+  (interactive)
+  ;;; TODO YOU ARE HERE
+  )
+
+;;;###autoload
+(defun read-later-clear-folder-filter ()
+  "Clear the current folder filter."
+  (interactive)
+  (setq read-later-folder nil)
+  (read-later-clear-table)
+  (read-later-load-more))
+
+;;;###autoload
+(defun read-later-clear-tag-filter ()
+  "Clear the current tag filter."
+  (interactive)
+  (setq read-later-tag nil)
+  (read-later-clear-table)
+  (read-later-load-more))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 
