@@ -167,6 +167,7 @@ Only filters if folder is not specified."
 (defun read-later-clear-table ()
   "Clear bookmarks from table."
   (interactive)
+  (setq read-later--bookmarks-data nil)
   (read-later--display-bookmarks nil))
 
 ;;;###autoload
@@ -245,8 +246,8 @@ Only filters if folder is not specified."
   (read-later-api-full-request 'folders-list
                                :type "folder"
                                :callback (lambda (folders)
-                                           (let ((folder (completing-read "Choose a folder: " (mapcar (lambda (item) (plist-get item :title)) folders))))
-                                             (setq read-later-folder folder)
+                                           (let ((folder (completing-read "Choose a folder: " (append (mapcar (lambda (item) (plist-get item :title)) folders) '(unread archive starred)) nil nil "unread")))
+                                             (setq read-later-folder (number-to-string(plist-get (cl-find-if (lambda (item) (equal (plist-get item :title) folder)) folders) :folder_id)))
                                              (read-later-clear-table)
                                              (read-later-load-more)))))
 
