@@ -250,12 +250,6 @@ Only filters if folder is not specified."
                                              (read-later-clear-table)
                                              (read-later-load-more)))))
 
-(defun read-later-set-tag-filter ()
-  "Set the current tag filter."
-  (interactive)
-  ;;; TODO YOU ARE HERE
-  )
-
 ;;;###autoload
 (defun read-later-clear-folder-filter ()
   "Clear the current folder filter."
@@ -265,12 +259,10 @@ Only filters if folder is not specified."
   (read-later-load-more))
 
 ;;;###autoload
-(defun read-later-clear-tag-filter ()
+(defun read-later-clear-filters ()
   "Clear the current tag filter."
   (interactive)
-  (setq read-later-tag nil)
-  (read-later-clear-table)
-  (read-later-load-more))
+  (read-later-clear-folder-filter))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 
