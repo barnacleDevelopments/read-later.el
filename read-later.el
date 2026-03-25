@@ -252,7 +252,7 @@ Only filters if folder is not specified."
                                :callback (lambda (folders)
                                            (let* (
                                                   (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
-                                                  (selected-title (completing-read "Choose a folder: " folder-titles))
+                                                  (selected-title (completing-read "Choose a folder (default unread): " folder-titles))
                                                   (is-default-folder (seq-some (lambda (title)
                                                                                  (string= title selected-title)) read-later-default-folders)))
                                              (if is-default-folder
