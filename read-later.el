@@ -232,8 +232,8 @@ Only filters if folder is not specified."
   (interactive)
   (if(read-later-check-bookmarks-buffer)
       (let* ((bookmark-id (tabulated-list-get-id))
-             (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
-                                   read-later--bookmarks-data))
+             (bookmark (seq-find (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
+                                 read-later--bookmarks-data))
              (url (plist-get bookmark :url)))
         (if url
             (browse-url url)
@@ -246,8 +246,16 @@ Only filters if folder is not specified."
   (read-later-api-full-request 'folders-list
                                :type "folder"
                                :callback (lambda (folders)
-                                           (let ((folder (completing-read "Choose a folder: " (append (mapcar (lambda (item) (plist-get item :title)) folders) '(unread archive starred)) nil nil "unread")))
-                                             (setq read-later-folder (number-to-string(plist-get (cl-find-if (lambda (item) (equal (plist-get item :title) folder)) folders) :folder_id)))
+                                           (let* ((default-folders '(unread archive starred))
+                                                  (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) default-folders))
+                                                  (selected-title (completing-read "Choose a folder: " folder-titles))
+                                                  (is-default-folder (seq-some (lambda (title)
+                                                                                 (string= title selected-title)) default-folders)))
+                                             (if is-default-folder
+                                                 (setq read-later-folder selected-title)
+                                               (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
+                                                      (selected-folder-id (number-to-string(plist-get selected-folder :folder_id))))
+                                                 (setq read-later-folder selected-folder-id)))
                                              (read-later-clear-table)
                                              (read-later-load-more)))))
 
