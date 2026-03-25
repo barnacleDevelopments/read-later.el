@@ -10,7 +10,7 @@
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "27.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -250,8 +250,7 @@ Only filters if folder is not specified."
   (read-later-api-full-request 'folders-list
                                :type "folder"
                                :callback (lambda (folders)
-                                           (let* (
-                                                  (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
+                                           (let* ((folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
                                                   (selected-title (completing-read "Choose a folder (default unread): " folder-titles))
                                                   (is-default-folder (seq-some (lambda (title)
                                                                                  (string= title selected-title)) read-later-default-folders)))
@@ -262,6 +261,24 @@ Only filters if folder is not specified."
                                                  (setq read-later-folder selected-folder-id)))
                                              (read-later-clear-table)
                                              (read-later-load-more)))))
+
+(defun read-later-get-tags ()
+  "Use the current buffer to collect available tags.
+This is not an exaustive list just what is visible in
+the buffer because instapaper API does not have a tag listing endpoint."
+  (seq-filter (lambda (tag-list) tag-list)(apply #'append (seq-map (lambda (bookmark)
+                                                                     (message "Bookmark: %S" bookmark)
+                                                                     (plist-get bookmark :tags)) read-later--bookmarks-data)))))
+
+;;;###autoload
+(defun read-later-search-tag ()
+  "Seach tag to filter by it."
+  (interactive)
+  (let* ((tags (read-later-get-tags))
+         (tag-titles (seq-map (lambda(tag) (plist-get tag :name)) tags))
+         (tag (completing-read "Search tag: " tag-titles)))
+    ;;; TODO YOU ARE HERE
+    (read-later-clear-filters)))
 
 ;;;###autoload
 (defun read-later-clear-folder-filter ()
