@@ -10,7 +10,7 @@
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -67,6 +67,8 @@ Only filters if folder is not specified."
   :type 'string
   :group 'read-later)
 
+(defconst read-later-default-folders '(unread archive starred) "Default folders of Instapaper.")
+
 ;; Variables
 (defvar read-later-folder read-later-default-folder
   "Current active folder for filtering.")
@@ -81,6 +83,8 @@ Only filters if folder is not specified."
 (defun read-later-reset-tags ()
   "Reset active tags to defaults."
   (setq read-later-tag read-later-default-tag))
+
+
 
 ;; ========================================= READ LATER MODE =========================================
 (defvar read-later-mode-map
@@ -167,6 +171,7 @@ Only filters if folder is not specified."
 (defun read-later-clear-table ()
   "Clear bookmarks from table."
   (interactive)
+  (setq read-later--bookmarks-data nil)
   (read-later--display-bookmarks nil))
 
 ;;;###autoload
@@ -231,13 +236,46 @@ Only filters if folder is not specified."
   (interactive)
   (if(read-later-check-bookmarks-buffer)
       (let* ((bookmark-id (tabulated-list-get-id))
-             (bookmark (cl-find-if (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
-                                   read-later--bookmarks-data))
+             (bookmark (seq-find (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
+                                 read-later--bookmarks-data))
              (url (plist-get bookmark :url)))
         (if url
             (browse-url url)
           (message "Warning: No URL found for this bookmark")))))
 
+;;;###autoload
+(defun read-later-set-folder-filter ()
+  "Set the current folder filter."
+  (interactive)
+  (read-later-api-full-request 'folders-list
+                               :type "folder"
+                               :callback (lambda (folders)
+                                           (let* (
+                                                  (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
+                                                  (selected-title (completing-read "Choose a folder (default unread): " folder-titles))
+                                                  (is-default-folder (seq-some (lambda (title)
+                                                                                 (string= title selected-title)) read-later-default-folders)))
+                                             (if is-default-folder
+                                                 (setq read-later-folder selected-title)
+                                               (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
+                                                      (selected-folder-id (number-to-string(plist-get selected-folder :folder_id))))
+                                                 (setq read-later-folder selected-folder-id)))
+                                             (read-later-clear-table)
+                                             (read-later-load-more)))))
+
+;;;###autoload
+(defun read-later-clear-folder-filter ()
+  "Clear the current folder filter."
+  (interactive)
+  (setq read-later-folder nil)
+  (read-later-clear-table)
+  (read-later-load-more))
+
+;;;###autoload
+(defun read-later-clear-filters ()
+  "Clear the current tag filter."
+  (interactive)
+  (read-later-clear-folder-filter))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
 
