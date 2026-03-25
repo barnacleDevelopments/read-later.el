@@ -67,6 +67,8 @@ Only filters if folder is not specified."
   :type 'string
   :group 'read-later)
 
+(defconst read-later-default-folders '(unread archive starred) "Default folders of Instapaper.")
+
 ;; Variables
 (defvar read-later-folder read-later-default-folder
   "Current active folder for filtering.")
@@ -81,6 +83,8 @@ Only filters if folder is not specified."
 (defun read-later-reset-tags ()
   "Reset active tags to defaults."
   (setq read-later-tag read-later-default-tag))
+
+
 
 ;; ========================================= READ LATER MODE =========================================
 (defvar read-later-mode-map
@@ -246,11 +250,11 @@ Only filters if folder is not specified."
   (read-later-api-full-request 'folders-list
                                :type "folder"
                                :callback (lambda (folders)
-                                           (let* ((default-folders '(unread archive starred))
-                                                  (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) default-folders))
+                                           (let* (
+                                                  (folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
                                                   (selected-title (completing-read "Choose a folder: " folder-titles))
                                                   (is-default-folder (seq-some (lambda (title)
-                                                                                 (string= title selected-title)) default-folders)))
+                                                                                 (string= title selected-title)) read-later-default-folders)))
                                              (if is-default-folder
                                                  (setq read-later-folder selected-title)
                                                (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
