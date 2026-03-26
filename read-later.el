@@ -165,12 +165,6 @@ Only filters if folder is not specified."
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Instapaper Bookmarks*")))
 
-;;;###autoload
-(defun read-later-clear-table ()
-  "Clear bookmarks from table."
-  (interactive)
-  (setq read-later--bookmarks-data nil)
-  (read-later--display-bookmarks nil))
 
 ;;;###autoload
 (defun read-later-load-more ()
@@ -220,6 +214,21 @@ Only filters if folder is not specified."
     (read-later--update-bookmark-read-progress id 0)))
 
 ;;;###autoload
+(defun read-later-clear-filters ()
+  "Clear the current tag filter."
+  (interactive)
+  (setq read-later-folder nil)
+  (setq read-later-tag nil))
+
+;;;###autoload
+(defun read-later-clear-table ()
+  "Clear bookmarks from table."
+  (interactive)
+  (setq read-later--bookmarks-data nil)
+  (read-later-clear-filters)
+  (read-later--display-bookmarks nil))
+
+;;;###autoload
 (defun read-later-archive-bookmark-at-point ()
   "Arhive bookmark at point."
   (interactive)
@@ -244,14 +253,15 @@ Only filters if folder is not specified."
 (defun read-later--prompt-folder-select (folders)
   "Prompt folder select from list of FOLDERS."
   (let* ((folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
-         (selected-title (completing-read "Choose a folder (default unread): " folder-titles))
-         (is-default-folder (seq-some (lambda (title)
-                                        (string= title selected-title)) read-later-default-folders)))
-    (if is-default-folder
-        (setq read-later-folder selected-title)
-      (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
-             (selected-folder-id (number-to-string(plist-get selected-folder :folder_id))))
-        (setq read-later-folder selected-folder-id)))))
+         (selected-title (completing-read "Choose a folder (default unread): " folder-titles nil t nil nil "Unread"))
+         (is-default-folder (seq-some (lambda (title) (string= title selected-title)) read-later-default-folders)))
+    (cond ((equal selected-title "Unread")
+           (message "No folder selected, defaulting to unread.")
+           nil)
+          (is-default-folder selected-title)
+          (t (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
+                    (selected-folder-id (number-to-string (plist-get selected-folder :folder_id))))
+               selected-folder-id)))))
 
 ;;;###autoload
 (defun read-later-set-folder-filter ()
@@ -259,10 +269,11 @@ Only filters if folder is not specified."
   (interactive)
   (read-later-api-full-request 'folders-list
                                :type "folder"
-                               :callback #'read-later--prompt-folder-select
-                               (read-later-clear-filters)
-                               (read-later-clear-table)
-                               (read-later-load-more)))
+                               :callback (lambda (folders)
+                                           (let ((selected-folder-id (read-later--prompt-folder-select folders)))
+                                             (read-later-clear-table)
+                                             (setq read-later-folder (or selected-folder-id "unread"))
+                                             (read-later-load-more)))))
 
 (defun read-later-get-tags ()
   "Use the current buffer to collect available tags.
@@ -273,24 +284,21 @@ the buffer because instapaper API does not have a tag listing endpoint."
                                          (message "Bookmark: %S" bookmark)
                                          (plist-get bookmark :tags)) read-later--bookmarks-data))))
 
-;;;###autoload
-(defun read-later-clear-filters ()
-  "Clear the current tag filter."
-  (interactive)
-  (setq read-later-folder nil)
-  (setq read-later-tag nil)
-  (read-later-load-more))
+
+
+(defun read-later--prompt-tag-search ()
+  "Prompt for tag."
+  (let* ((tags (read-later-get-tags))
+         (tag-titles (seq-map (lambda(tag) (plist-get tag :name)) tags)))
+    (completing-read "Search tag: " tag-titles)))
 
 ;;;###autoload
 (defun read-later-search-tag ()
   "Seach by tag."
   (interactive)
-  (let* ((tags (read-later-get-tags))
-         (tag-titles (seq-map (lambda(tag) (plist-get tag :name)) tags))
-         (tag (completing-read "Search tag: " tag-titles)))
+  (let* ((tag (read-later--prompt-tag-search)))
+    (read-later-clear-table)
     (setq read-later-tag tag)
-    ;;filters need to be cleared because you can only filter by tag or folder id
-    (read-later-clear-filters)
     (read-later-load-more)))
 
 ;; ========================================= UTILITY FUNCTIONS =========================================
