@@ -10,6 +10,8 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
   - Delete bookmarks
   - Mark bookmarks as read or unread
   - Mark bookmarks as archived
+  - Filter bookmarks by tag
+  - Filter bookmarks by folder
   - More comming soon!
 
 ## Prerequisites
