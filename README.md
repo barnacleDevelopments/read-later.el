@@ -13,6 +13,9 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
   - Filter bookmarks by tag
   - Filter bookmarks by folder
   - More comming soon!
+ 
+## Caveats
+Currently bookmarks need to be pulled down each time you start a new Emacs session and aren't persisted like in other packages like Elfeed. I'll be imlementing full sync functionality eventually but I want to provde management functionality early on. 
 
 ## Prerequisites
 
