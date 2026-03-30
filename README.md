@@ -112,10 +112,9 @@ You can store your credentials in [1Password](https://1password.com) using the [
 3. Create a 1Password item named `www.instapaper.com` with:
    - A field named `username` containing your Instapaper email
    - A field named `password` containing your Instapaper password
-4. Create a second 1Password item named `instapaper-oauth` with:
    - A field named `username` containing your OAuth consumer key
    - A field named `password` containing your OAuth consumer secret
-5. Configure read-later to use 1Password:
+4. Configure read-later to use 1Password:
    ```elisp
    (setq read-later-api-auth-backend '1password)
    ```
