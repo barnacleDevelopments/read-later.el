@@ -376,13 +376,8 @@ Create a 1Password item named @code{www.instapaper.com} with:
 @itemize @bullet
 @item A field named @code{username} containing your Instapaper email
 @item A field named @code{password} containing your Instapaper password
-@end itemize
-
-@item
-Create a second item named @code{instapaper-oauth} with:
-@itemize @bullet
-@item A field named @code{username} containing your OAuth consumer key
-@item A field named @code{password} containing your OAuth consumer secret
+@item A field named @code{consumer-secret} containing your Instapaper consumer-secret
+@item A field named @code{consumer-key } containing your Instapaper consumer-key
 @end itemize
 
 @item

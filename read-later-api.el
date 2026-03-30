@@ -118,8 +118,8 @@ Set by `read-later-api-oauth-setup'.")
   "Look up credentials for HOST via auth-source.
 Returns a cons cell (USER . SECRET) or nil if not found."
   (if (eq read-later-api-auth-backend '1password)
-      (let ((user   (auth-source-pick-first-password :host host :user "username"))
-            (secret (auth-source-pick-first-password :host host :user "password")))
+      (let ((user   (auth-source-pick-first-password :host read-later-api-host :user "username"))
+            (secret (auth-source-pick-first-password :host read-later-api-host :user "password")))
         (when (and user secret)
           (cons user secret)))
     (let* ((auth-info (car (auth-source-search :host host :require '(:user :secret))))
@@ -134,7 +134,11 @@ Looks up host 'instapaper-oauth'.
 Returns a cons cell (CONSUMER-KEY . CONSUMER-SECRET) or nil if not found."
   (or read-later-api--cached-consumer-credentials
       (setq read-later-api--cached-consumer-credentials
-            (read-later-api--lookup-credentials "instapaper-oauth"))))
+            (if (eq read-later-api-auth-backend '1password)
+                (let ((key (auth-source-pick-first-password :host read-later-api-host :user "consumer-key"))
+                      (secret (auth-source-pick-first-password :host read-later-api-host :user "consumer-secret") ))
+                  (cons key secret))
+              (read-later-api--lookup-credentials "instapaper-oauth")))))
 
 (defun read-later-api--get-credentials ()
   "Retrieve Instapaper credentials from auth-source.
@@ -142,7 +146,7 @@ Looks up host `read-later-api-host'.
 Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
   (or read-later-api--cached-credentials
       (setq read-later-api--cached-credentials
-            (let ((creds (read-later-api--lookup-credentials read-later-api-host)))
+            (let ((creds (read-later-api--lookup-credentials nil)))
               creds))))
 
 (defun read-later-api--make-auth-header (credentials)
