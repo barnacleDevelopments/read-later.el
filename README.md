@@ -35,11 +35,7 @@ Currently bookmarks need to be pulled down each time you start a new Emacs sessi
 ## Setting Up Instapaper
 
 ### 1. Create an Instapaper Account
-
-1. Go to [https://www.instapaper.com/](https://www.instapaper.com/)
-2. Click "Sign Up" in the top right
-3. Enter your email address and choose a password
-4. Verify your email address
+Go to [https://www.instapaper.com/](https://www.instapaper.com/)
 
 #### a. Request Full API Credentials from Instapaper
 To protect the Instapaper API, API keys cannot be included as part of this package to avoid abuse of their API that they so graciously provide for free. For you to gain access to Instapaper's Full API and take advantage of all the read-later.el functionality, you'll need to acquire your own set of key + secret from them. Eventually, I would like to setup an intermediary that can handle managing consumer credentials so that users don't require them to use this package. For the time being, if you would like to take advantage of this package's full functionality you'll need supply your own by contacting Instapaper:
