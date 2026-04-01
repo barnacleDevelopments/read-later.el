@@ -1,4 +1,6 @@
 # read-later.el
+Warning: Just recieved notification from Instapaper that they will be upgrading authentication from oauth 1.0 to 2.0. No date was specified thus I'll keep this update with the latest info. Applications that use the Instapaper API will also need to be linked to a user account after September 30th. I'll be updating the details for authenticating whenever they become available.
+
 Manage your Instapaper account using Emacs! This project was inspired by the use of Instapaper on my Kobo e-reader. This package is for Emacs users that want to easily manage all their Instapaper bookmarks, highlights and folders. It also integrates with other packages like [Elfeed](https://github.com/skeeto/elfeed) to allow users to add articles to Instapaper without ever leaving the Emacs experience. You can read more about the project here: https://devdeveloper.ca/projects/read-later-el/
 
 ## Features
