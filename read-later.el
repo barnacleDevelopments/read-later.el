@@ -266,10 +266,8 @@ Only filters if folder is not specified."
 (defun read-later-link-hint-add-url ()
   "Add url using link-hint."
   (interactive)
-  (when t
-    (link-hint-copy-link)
-    (message "URL: %S" (car kill-ring))
-    (read-later-add-url (car kill-ring)))))
+  (link-hint-copy-link)
+  (read-later-add-url (car kill-ring)))
 
 ;;;###autoload
 (defun read-later-set-folder-filter ()

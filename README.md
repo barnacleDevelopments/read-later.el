@@ -12,6 +12,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
   - Mark bookmarks as archived
   - Filter bookmarks by tag
   - Filter bookmarks by folder
+  - Interactively add link using link-hint
   - More comming soon!
  
 ## Caveats
