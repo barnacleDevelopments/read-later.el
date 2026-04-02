@@ -263,6 +263,14 @@ Only filters if folder is not specified."
                     (selected-folder-id (number-to-string (plist-get selected-folder :folder_id))))
                selected-folder-id)))))
 
+(defun read-later-link-hint-add-url ()
+  "Add url using link-hint."
+  (interactive)
+  (when t
+    (link-hint-copy-link)
+    (message "URL: %S" (car kill-ring))
+    (read-later-add-url (car kill-ring)))))
+
 ;;;###autoload
 (defun read-later-set-folder-filter ()
   "Set the current folder filter."
@@ -328,10 +336,3 @@ the buffer because instapaper API does not have a tag listing endpoint."
 (provide 'read-later)
 
 ;;; read-later.el ends here
-
-
-
-
-
-
-
