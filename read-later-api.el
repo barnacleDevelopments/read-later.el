@@ -33,7 +33,7 @@
 ;; SOFTWARE.
 
 ;;; Code:
-
+(require 'read-later-globals)
 (require 'url)
 (require 'auth-source)
 (require 'read-later-oauth)

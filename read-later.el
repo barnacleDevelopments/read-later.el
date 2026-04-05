@@ -7,7 +7,7 @@
 ;; Created: October 25, 2025
 ;; Modified: November 06, 2025
 ;; Version: 2.1.2
-;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
+;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex text tools unix vc wp
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
 ;; Instapaper API Docs: https://www.instapaper.com/api/simple
 ;; Package-Requires: ((emacs "27.1"))
@@ -37,54 +37,18 @@
 ;; SOFTWARE.
 
 ;;; Code:
+(require 'read-later-globals)
 (require 'read-later-api)
 (require 'read-later-bookmarks)
+(require 'read-later-tags)
+(require 'read-later-folders)
+(require 'read-later-utils)
 (require 'json)
 
-;; Keymap
+;; ========================================= READ LATER MODE =========================================
 (defvar read-later-map (make-sparse-keymap)
   "Read later keymap.")
 
-;; Customize Variables
-(defcustom read-later-update-limit 25
-  "The Instapaper API limit query parameter value."
-  :type 'integer
-  :group 'read-later)
-
-(defcustom read-later-append-limit 50
-  "The Instapaper API limit query parameter value when loading more."
-  :type 'integer
-  :group 'read-later)
-
-(defcustom read-later-default-tag nil
-  "The default tags applied to BOOKMARKS query.
-Only filters if folder is not specified."
-  :type 'string
-  :group 'read-later)
-
-(defcustom read-later-default-folder "unread"
-  "The default folders applied to BOOKMARKS query."
-  :type 'string
-  :group 'read-later)
-
-(defconst read-later-default-folders '(unread archive starred) "Default folders of Instapaper.")
-
-;; Variables
-(defvar read-later-folder read-later-default-folder
-  "Current active folder for filtering.")
-
-(defvar read-later-tag read-later-default-tag
-  "Current active tags for filtering.")
-
-(defun read-later-reset-folders ()
-  "Reset active folders to defaults."
-  (setq read-later-folder read-later-default-folder))
-
-(defun read-later-reset-tags ()
-  "Reset active tags to defaults."
-  (setq read-later-tag read-later-default-tag))
-
-;; ========================================= READ LATER MODE =========================================
 (defvar read-later-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "u" 'read-later-update)
@@ -141,14 +105,6 @@ Only filters if folder is not specified."
   (interactive "sArticle URL:")
   (read-later-add-url url))
 
-;; ========================================= ELFEED ACTION FUNCTIONS =========================================
-;;;###autoload
-(defun read-later-add-elfeed-entry-at-point()
-  "Add the elfeed entry at point in show buffer."
-  (interactive)
-  (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
-    (read-later-add-url url)))
-
 ;; ========================================= BOOKMARK ACTION FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-add-url-at-point()
@@ -165,7 +121,6 @@ Only filters if folder is not specified."
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Instapaper Bookmarks*")))
 
-
 ;;;###autoload
 (defun read-later-load-more ()
   "Load extra bookmarks into the current bookmark buffer."
@@ -173,7 +128,8 @@ Only filters if folder is not specified."
   (if(read-later-check-bookmarks-buffer)
       (with-current-buffer "*Instapaper Bookmarks*"
         (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
-                        ("have" . ,(read-later--get-resource-ids read-later--bookmarks-data))
+                        ("have" . ,(mapconcat 'number-to-string (mapcar (lambda (resource)
+                                                                          (plist-get resource :bookmark_id)) read-later--bookmarks-data) ","))
                         ("tag". ,read-later-tag)
                         ("folder_id" . ,read-later-folder))))
           (read-later-api-full-request 'bookmarks-list
@@ -198,7 +154,7 @@ Only filters if folder is not specified."
                                                        (progn
                                                          (read-later--remove-bookmarks (list id))
                                                          (message "Bookmark deleted: %s" id)))))))))
-
+;;;###autoload
 (defun read-later-mark-read-at-point ()
   "Mark the bookmark at point as read."
   (interactive)
@@ -206,6 +162,7 @@ Only filters if folder is not specified."
     (message (format "Updating read progress for: %S" id))
     (read-later--update-bookmark-read-progress id 1.0)))
 
+;;;###autoload
 (defun read-later-mark-unread-at-point ()
   "Mark the bookmark at point as unread."
   (interactive)
@@ -250,25 +207,7 @@ Only filters if folder is not specified."
             (browse-url url)
           (message "Warning: No URL found for this bookmark")))))
 
-(defun read-later--prompt-folder-select (folders)
-  "Prompt folder select from list of FOLDERS."
-  (let* ((folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))
-         (selected-title (completing-read "Choose a folder (default unread): " folder-titles nil t nil nil "Unread"))
-         (is-default-folder (seq-some (lambda (title) (string= title selected-title)) read-later-default-folders)))
-    (cond ((equal selected-title "Unread")
-           (message "No folder selected, defaulting to unread.")
-           nil)
-          (is-default-folder selected-title)
-          (t (let* ((selected-folder (seq-find (lambda (item) (equal (plist-get item :title) selected-title)) folders))
-                    (selected-folder-id (number-to-string (plist-get selected-folder :folder_id))))
-               selected-folder-id)))))
-
-(defun read-later-link-hint-add-url ()
-  "Add url using link-hint."
-  (interactive)
-  (link-hint-copy-link)
-  (read-later-add-url (car kill-ring)))
-
+;; ========================================= FILTER FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-set-folder-filter ()
   "Set the current folder filter."
@@ -280,24 +219,6 @@ Only filters if folder is not specified."
                                              (read-later-clear-table)
                                              (setq read-later-folder (or selected-folder-id "unread"))
                                              (read-later-load-more)))))
-
-(defun read-later-get-tags ()
-  "Use the current buffer to collect available tags.
-This is not an exaustive list just what is visible in
-the buffer because instapaper API does not have a tag listing endpoint."
-  (seq-filter (lambda (tag-list) tag-list)
-              (apply #'append (seq-map (lambda (bookmark)
-                                         (message "Bookmark: %S" bookmark)
-                                         (plist-get bookmark :tags)) read-later--bookmarks-data))))
-
-
-
-(defun read-later--prompt-tag-search ()
-  "Prompt for tag."
-  (let* ((tags (read-later-get-tags))
-         (tag-titles (seq-map (lambda(tag) (plist-get tag :name)) tags)))
-    (completing-read "Search tag: " tag-titles)))
-
 ;;;###autoload
 (defun read-later-search-tag ()
   "Seach by tag."
@@ -307,29 +228,21 @@ the buffer because instapaper API does not have a tag listing endpoint."
     (setq read-later-tag tag)
     (read-later-load-more)))
 
-;; ========================================= UTILITY FUNCTIONS =========================================
+;; ========================================= LINK HINT FUNCTIONS =========================================
+;;;###autoload
+(defun read-later-link-hint-add-url ()
+  "Add url using link-hint."
+  (interactive)
+  (link-hint-copy-link)
+  (read-later-add-url (car kill-ring)))
 
-(defun read-later--get-resource-ids (resource-list)
-  "Return list of ids of provided RESOURCE-LIST."
-  (mapconcat 'number-to-string (mapcar (lambda (resource)
-                                         (plist-get resource :bookmark_id)) resource-list) ","))
-
-(defun read-later-add-url (url)
-  "Add URL to Instapaper account asynchronously."
-  (message "Adding to Instapaper...")
-  (read-later-api-simple-request 'simple-add
-                                 :params `((url . ,url))
-                                 :callback (lambda (result)
-                                             (if (plist-get result :success)
-                                                 (message "✓ Added to Instapaper: %s" url)
-                                               (message "✗ %s" (plist-get result :message))))))
-
-(defun read-later-check-bookmarks-buffer ()
-  "Check if the *Instapaper Bookmarks* buffer exists."
-  (if (get-buffer "*Instapaper Bookmarks*")
-      t
-    (message "Please run M-x read-later first to create the bookmarks buffer")
-    nil))
+;; ========================================= ELFEED ACTION FUNCTIONS =========================================
+;;;###autoload
+(defun read-later-add-elfeed-entry-at-point()
+  "Add the elfeed entry at point in show buffer."
+  (interactive)
+  (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
+    (read-later-add-url url)))
 
 (provide 'read-later)
 
