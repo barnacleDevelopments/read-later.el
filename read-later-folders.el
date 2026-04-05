@@ -14,6 +14,10 @@
 ;;; Code:
 (require 'read-later-globals)
 
+(defun read-later-reset-folders ()
+  "Reset active folders to defaults."
+  (setq read-later-folder read-later-default-folder))
+
 (defun read-later--prompt-folder-select (folders)
   "Prompt folder select from list of FOLDERS."
   (let* ((folder-titles (append (mapcar (lambda (item) (plist-get item :title)) folders) read-later-default-folders))

@@ -14,6 +14,10 @@
 ;;; Code:
 (require 'read-later-globals)
 
+(defun read-later-reset-tags ()
+  "Reset active tags to defaults."
+  (setq read-later-tag read-later-default-tag))
+
 (defun read-later-get-tags ()
   "Use the current buffer to collect available tags.
 This is not an exaustive list just what is visible in

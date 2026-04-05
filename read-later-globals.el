@@ -15,6 +15,9 @@
 
 ;; Keymap
 
+(defvar-local read-later--bookmarks-data nil
+  "List of bookmark plists for the current buffer.")
+
 ;; Customize Variables
 (defcustom read-later-update-limit 25
   "The Instapaper API limit query parameter value."
@@ -33,12 +36,8 @@
 
 (defconst read-later-default-folders '(unread archive starred) "Default folders of Instapaper.")
 
-(defvar read-later-folder read-later-default-folder
+(defvar-local read-later-folder read-later-default-folder
   "Current active folder for filtering.")
-
-(defun read-later-reset-folders ()
-  "Reset active folders to defaults."
-  (setq read-later-folder read-later-default-folder))
 
 (defcustom read-later-default-tag nil
   "The default tags applied to BOOKMARKS query.
@@ -46,12 +45,10 @@ Only filters if folder is not specified."
   :type 'string
   :group 'read-later)
 
-(defvar read-later-tag read-later-default-tag
+(defvar-local read-later-tag read-later-default-tag
   "Current active tags for filtering.")
 
-(defun read-later-reset-tags ()
-  "Reset active tags to defaults."
-  (setq read-later-tag read-later-default-tag))
+
 
 (provide 'read-later-globals)
 ;;; read-later-globals.el ends here

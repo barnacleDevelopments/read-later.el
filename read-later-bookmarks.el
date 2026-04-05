@@ -10,9 +10,6 @@
 (require 'cl-lib)
 (require 'read-later-api)
 
-(defvar read-later--bookmarks-data nil
-  "List of bookmark plists for the current buffer.")
-
 ;; ========================================= FORMATER FUNCTIONS =========================================
 (defun read-later--format-progress (progress)
   "Format PROGRESS as a percentage string."
