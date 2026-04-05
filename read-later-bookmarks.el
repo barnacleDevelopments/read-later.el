@@ -62,7 +62,6 @@
                                              (read-later--update-bookmark (car bookmarks))
                                              (message "Bookmark archived")))))
 
-
 (defun read-later--unarchive-bookmark (id)
   "Archive bookmark with ID."
   (read-later-api-full-request 'bookmarks-unarchive
@@ -73,10 +72,9 @@
                 (read-later--update-bookmark (car bookmarks))
                 (message "Bookmark unarchived"))))
 
-
 (defun read-later--display-bookmarks (bookmarks)
   "Display BOOKMARKS in the buffer."
-  (with-current-buffer "*Instapaper Bookmarks*"
+  (with-current-buffer "*Read-Later Bookmarks*"
     (setq read-later--bookmarks-data bookmarks)
     (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
     (tabulated-list-print t)))

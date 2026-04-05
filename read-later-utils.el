@@ -12,7 +12,7 @@
 ;;  Description
 ;;
 ;;; Code:
-
+(require 'read-later-globals)
 (require 'read-later-api)
 
 (defun read-later-add-url (url)
@@ -25,12 +25,13 @@
                                                  (message "✓ Added to Instapaper: %s" url)
                                                (message "✗ %s" (plist-get result :message))))))
 
-(defun read-later-check-bookmarks-buffer ()
-  "Check if the *Instapaper Bookmarks* buffer exists."
-  (if (get-buffer "*Instapaper Bookmarks*")
-      t
-    (message "Please run M-x read-later first to create the bookmarks buffer")
-    nil))
+(defun read-later-check-bookmarks-buffer (callback)
+  "Check if the *Read-Later Bookmarks* buffer exists and call CALLBACK inside."
+  (unless (and (get-buffer "*Read-Later Bookmarks*")
+               (derived-mode-p 'read-later-mode))
+    (user-error "This command only works in read-later-mode"))
+  (with-current-buffer "*Read-Later Bookmarks*"
+    (funcall callback)))
 
 (provide 'read-later-utils)
 ;;; read-later-utils.el ends here

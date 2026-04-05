@@ -57,7 +57,7 @@
     map)
   "Keymap for read-later-mode.")
 
-(define-derived-mode read-later-mode tabulated-list-mode "Instapaper Bookmarks"
+(define-derived-mode read-later-mode tabulated-list-mode "Read-Later Bookmarks"
   "Major mode for viewing Instapaper bookmarks."
   (setq tabulated-list-format [("Title" 50 t)
                                ("Progress" 10 t)
@@ -68,7 +68,7 @@
 
 (defun read-later--create-bookmarks-buffer (bookmarks)
   "Create the bookmarks buffer with BOOKMARKS data."
-  (with-current-buffer (get-buffer-create "*Instapaper Bookmarks*")
+  (with-current-buffer (get-buffer-create "*Read-Later Bookmarks*")
     (read-later-mode)
     (setq read-later--bookmarks-data bookmarks)
     (setq tabulated-list-entries (read-later--create-bookmark-entries bookmarks))
@@ -102,7 +102,7 @@
 ;;;###autoload
 (defun read-later-interactively-add-url(url)
   "Add URL interactively."
-  (interactive "sArticle URL:")
+  (interactive "sURL:")
   (read-later-add-url url))
 
 ;; ========================================= BOOKMARK ACTION FUNCTIONS =========================================
@@ -117,58 +117,62 @@
 (defun read-later ()
   "Enter read-later. Open the bookmarks table buffer."
   (interactive)
-  (let* ((bookmarks-buffer (get-buffer "*Instapaper Bookmarks*")))
+  (let* ((bookmarks-buffer (get-buffer "*Read-Later Bookmarks*")))
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
-    (switch-to-buffer "*Instapaper Bookmarks*")))
+    (switch-to-buffer "*Read-Later Bookmarks*")))
 
 ;;;###autoload
 (defun read-later-load-more ()
   "Load extra bookmarks into the current bookmark buffer."
   (interactive)
-  (if(read-later-check-bookmarks-buffer)
-      (with-current-buffer "*Instapaper Bookmarks*"
-        (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
-                        ("have" . ,(mapconcat 'number-to-string (mapcar (lambda (resource)
-                                                                          (plist-get resource :bookmark_id)) read-later--bookmarks-data) ","))
-                        ("tag". ,read-later-tag)
-                        ("folder_id" . ,read-later-folder))))
-          (read-later-api-full-request 'bookmarks-list
-                                       :params params
-                                       :type "bookmark"
-                                       :callback (lambda (bookmarks)
-                                                   (read-later--append-bookmarks bookmarks)
-                                                   (message (format "  %S More Bookmarks loaded" read-later-append-limit))))))))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let ((params `(("limit" . ,(number-to-string (+ read-later-append-limit (or (length read-later--bookmarks-data) 0))))
+                     ("have" . ,(mapconcat 'number-to-string (mapcar (lambda (resource)
+                                                                       (plist-get resource :bookmark_id)) read-later--bookmarks-data) ","))
+                     ("tag". ,read-later-tag)
+                     ("folder_id" . ,read-later-folder))))
+       (read-later-api-full-request 'bookmarks-list
+                                    :params params
+                                    :type "bookmark"
+                                    :callback (lambda (bookmarks)
+                                                (read-later--append-bookmarks bookmarks)
+                                                (message (format "  %S More Bookmarks loaded" read-later-append-limit))))))))
 
 ;;;###autoload
 (defun read-later-delete-bookmark-at-point ()
   "Delete bookmark at point."
   (interactive)
-  (if(read-later-check-bookmarks-buffer)
-      (with-current-buffer "*Instapaper Bookmarks*"
-        (let ((id (tabulated-list-get-id)))
-          (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
-              (read-later-api-full-request 'bookmarks-delete
-                                           :params `(("bookmark_id" . ,(number-to-string id)))
-                                           :type "bookmark"
-                                           :callback (lambda (&rest _)
-                                                       (progn
-                                                         (read-later--remove-bookmarks (list id))
-                                                         (message "Bookmark deleted: %s" id)))))))))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let ((id (tabulated-list-get-id)))
+       (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
+           (read-later-api-full-request 'bookmarks-delete
+                                        :params `(("bookmark_id" . ,(number-to-string id)))
+                                        :type "bookmark"
+                                        :callback (lambda (&rest _)
+                                                    (progn
+                                                      (read-later--remove-bookmarks (list id))
+                                                      (message "Bookmark deleted: %s" id)))))))))
 ;;;###autoload
 (defun read-later-mark-read-at-point ()
   "Mark the bookmark at point as read."
   (interactive)
-  (let((id (tabulated-list-get-id)))
-    (message (format "Updating read progress for: %S" id))
-    (read-later--update-bookmark-read-progress id 1.0)))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let((id (tabulated-list-get-id)))
+       (message (format "Updating read progress for: %S" id))
+       (read-later--update-bookmark-read-progress id 1.0)))))
 
 ;;;###autoload
 (defun read-later-mark-unread-at-point ()
   "Mark the bookmark at point as unread."
   (interactive)
-  (let((id (tabulated-list-get-id)))
-    (message (format "Updating read progress for: %S" id))
-    (read-later--update-bookmark-read-progress id 0)))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let((id (tabulated-list-get-id)))
+       (message (format "Updating read progress for: %S" id))
+       (read-later--update-bookmark-read-progress id 0)))))
 
 ;;;###autoload
 (defun read-later-clear-filters ()
@@ -181,52 +185,61 @@
 (defun read-later-clear-table ()
   "Clear bookmarks from table."
   (interactive)
-  (setq read-later--bookmarks-data nil)
-  (read-later-clear-filters)
-  (read-later--display-bookmarks nil))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (setq read-later--bookmarks-data nil)
+     (read-later-clear-filters)
+     (read-later--display-bookmarks nil))))
 
 ;;;###autoload
 (defun read-later-archive-bookmark-at-point ()
   "Arhive bookmark at point."
   (interactive)
-  (let ((id (tabulated-list-get-id)))
-    (progn
-      (read-later--archive-bookmark id)
-      (read-later--remove-bookmarks (list id)))))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let ((id (tabulated-list-get-id)))
+       (progn
+         (read-later--archive-bookmark id)
+         (read-later--remove-bookmarks (list id)))))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
   "Open the bookmark URL at point in the bookmark buffer in browser."
   (interactive)
-  (if(read-later-check-bookmarks-buffer)
-      (let* ((bookmark-id (tabulated-list-get-id))
-             (bookmark (seq-find (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
-                                 read-later--bookmarks-data))
-             (url (plist-get bookmark :url)))
-        (if url
-            (browse-url url)
-          (message "Warning: No URL found for this bookmark")))))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let* ((bookmark-id (tabulated-list-get-id))
+            (bookmark (seq-find (lambda (b) (equal (plist-get b :bookmark_id) bookmark-id))
+                                read-later--bookmarks-data))
+            (url (plist-get bookmark :url)))
+       (if url
+           (browse-url url)
+         (message "Warning: No URL found for this bookmark"))))))
 
 ;; ========================================= FILTER FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-set-folder-filter ()
   "Set the current folder filter."
   (interactive)
-  (read-later-api-full-request 'folders-list
-                               :type "folder"
-                               :callback (lambda (folders)
-                                           (let ((selected-folder-id (read-later--prompt-folder-select folders)))
-                                             (read-later-clear-table)
-                                             (setq read-later-folder (or selected-folder-id "unread"))
-                                             (read-later-load-more)))))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (read-later-api-full-request 'folders-list
+                                  :type "folder"
+                                  :callback (lambda (folders)
+                                              (let ((selected-folder-id (read-later--prompt-folder-select folders)))
+                                                (read-later-clear-table)
+                                                (setq read-later-folder (or selected-folder-id "unread"))
+                                                (read-later-load-more)))))))
 ;;;###autoload
 (defun read-later-search-tag ()
   "Seach by tag."
   (interactive)
-  (let* ((tag (read-later--prompt-tag-search)))
-    (read-later-clear-table)
-    (setq read-later-tag tag)
-    (read-later-load-more)))
+  (read-later-check-bookmarks-buffer
+   (lambda ()
+     (let* ((tag (read-later--prompt-tag-search)))
+       (read-later-clear-table)
+       (setq read-later-tag tag)
+       (read-later-load-more)))))
 
 ;; ========================================= LINK HINT FUNCTIONS =========================================
 ;;;###autoload

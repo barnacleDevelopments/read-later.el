@@ -12,8 +12,7 @@
 ;;  Description
 ;;
 ;;; Code:
-
-;; Keymap
+(defvar-local read-later-mode-buffer-name "*Read-Later Bookmarks*")
 
 (defvar-local read-later--bookmarks-data nil
   "List of bookmark plists for the current buffer.")
@@ -47,8 +46,6 @@ Only filters if folder is not specified."
 
 (defvar-local read-later-tag read-later-default-tag
   "Current active tags for filtering.")
-
-
 
 (provide 'read-later-globals)
 ;;; read-later-globals.el ends here
