@@ -92,6 +92,20 @@
     (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Read-Later Bookmarks*")))
 
+(defun read-later-update ()
+  "Load bookmarks into the current bookmark buffer."
+  (let ((params `(("limit" . ,(number-to-string read-later-append-limit))
+                  ("have" . ,(mapconcat 'number-to-string (mapcar (lambda (resource)
+                                                                    (plist-get resource :bookmark_id)) read-later--bookmarks-data) ","))
+                  ("tag". ,read-later-tag)
+                  ("folder_id" . ,read-later-folder))))
+    (read-later-api-full-request 'bookmarks-list
+                                 :params params
+                                 :type "bookmark"
+                                 :callback (lambda (bookmarks)
+                                             (read-later--display-bookmarks bookmarks)
+                                             (message (format "  %S More Bookmarks loaded" read-later-append-limit))))))
+
 ;;;###autoload
 (defun read-later-load-more ()
   "Load extra bookmarks into the current bookmark buffer."
@@ -114,17 +128,15 @@
 (defun read-later-delete-bookmark-at-point ()
   "Delete bookmark at point."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda ()
-     (let ((id (tabulated-list-get-id)))
-       (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
-           (read-later-api-full-request 'bookmarks-delete
-                                        :params `(("bookmark_id" . ,(number-to-string id)))
-                                        :type "bookmark"
-                                        :callback (lambda (&rest _)
-                                                    (progn
-                                                      (read-later--remove-bookmarks (list id))
-                                                      (message "Bookmark deleted: %s" id)))))))))
+  (let ((id (tabulated-list-get-id)))
+    (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
+        (read-later-api-full-request 'bookmarks-delete
+                                     :params `(("bookmark_id" . ,(number-to-string id)))
+                                     :type "bookmark"
+                                     :callback (lambda (&rest _)
+                                                 (progn
+                                                   (read-later--remove-bookmarks (list id))
+                                                   (message "Bookmark deleted: %s" id)))))))
 ;;;###autoload
 (defun read-later-mark-read-at-point ()
   "Mark the bookmark at point as read."
@@ -156,11 +168,9 @@
 (defun read-later-clear-table ()
   "Clear bookmarks from table."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda ()
-     (setq read-later--bookmarks-data nil)
-     (read-later-clear-filters)
-     (read-later--display-bookmarks nil))))
+  (setq read-later--bookmarks-data nil)
+  (read-later-clear-filters)
+  (read-later--display-bookmarks nil))
 
 ;;;###autoload
 (defun read-later-archive-bookmark-at-point ()
@@ -200,7 +210,7 @@
                                               (let ((selected-folder-id (read-later--prompt-folder-select folders)))
                                                 (read-later-clear-table)
                                                 (setq read-later-folder (or selected-folder-id "unread"))
-                                                (read-later-load-more)))))))
+                                                (read-later-update)))))))
 ;;;###autoload
 (defun read-later-search-tag ()
   "Seach by tag."
@@ -210,7 +220,7 @@
      (let* ((tag (read-later--prompt-tag-search)))
        (read-later-clear-table)
        (setq read-later-tag tag)
-       (read-later-load-more)))))
+       (read-later-update)))))
 
 ;; ========================================= LINK HINT FUNCTIONS =========================================
 ;;;###autoload

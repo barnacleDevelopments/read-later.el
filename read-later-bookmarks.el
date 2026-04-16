@@ -4,7 +4,7 @@
 ;;; Internal utilities for managing bookmarks
 
 ;;; Code:
-
+(require 'read-later-globals)
 (require 'tabulated-list)
 (require 'json)
 (require 'cl-lib)
@@ -81,9 +81,10 @@
 
 (defun read-later--append-bookmarks (bookmarks)
   "Append BOOKMARKS to existing data."
-  (setq read-later--bookmarks-data
-        (append read-later--bookmarks-data bookmarks))
-  (read-later--display-bookmarks read-later--bookmarks-data))
+  (with-current-buffer "*Read-Later Bookmarks*"
+    (setq read-later--bookmarks-data
+          (append read-later--bookmarks-data bookmarks))
+    (read-later--display-bookmarks read-later--bookmarks-data)))
 
 (defun read-later--remove-bookmarks (bookmark_ids)
   "Remove BOOKMARK_IDS list."
