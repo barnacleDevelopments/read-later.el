@@ -31,7 +31,7 @@
                (derived-mode-p 'read-later-mode))
     (user-error "This command only works in read-later-mode"))
   (with-current-buffer "*Read-Later Bookmarks*"
-    (funcall callback)))
+    (funcall callback (current-buffer))))
 
 (provide 'read-later-utils)
 ;;; read-later-utils.el ends here
