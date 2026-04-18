@@ -9,6 +9,7 @@
 (require 'json)
 (require 'cl-lib)
 (require 'read-later-api)
+(require 'read-later-utils)
 
 ;; ========================================= FORMATER FUNCTIONS =========================================
 (defun read-later--format-progress (progress)
@@ -42,26 +43,47 @@
 ;; ========================================= ACTION FUNCTIONS =========================================
 (defun read-later--update-bookmark-read-progress (id progress)
   "Update the bookmarks with ID to read PROGRESS."
-  (read-later-api-full-request 'bookmarks-update-progress
-                               :params `(("bookmark_id" . ,(number-to-string id))
-                                         ("progress" . ,(number-to-string progress))
-                                         ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
-                               :type "bookmark"
-                               :callback (lambda (bookmarks)
-                                           (progn
-                                             (read-later--update-bookmark (car bookmarks))
-                                             (message "Bookmark read progress updated")))))
+  (read-later-check-bookmarks-buffer
+   (lambda (buffer)
+     (read-later-api-full-request 'bookmarks-update-progress
+                                  :params `(("bookmark_id" . ,(number-to-string id))
+                                            ("progress" . ,(number-to-string progress))
+                                            ("progress_timestamp" . ,(number-to-string (floor (float-time)))))
+                                  :type "bookmark"
+                                  :callback (lambda (bookmarks)
+                                              (with-current-buffer buffer
+                                                (progn
+                                                  (read-later--update-bookmark (car bookmarks))
+                                                  (message "Bookmark read progress updated"))))))))
 
 (defun read-later--archive-bookmark (id)
   "Archive bookmark with ID."
-  (read-later-api-full-request 'bookmarks-archive
-                               :params `(("bookmark_id" . ,(number-to-string id)))
-                               :type "bookmark"
-                               :callback (lambda (bookmarks)
-                                           (progn
-                                             (read-later--update-bookmark (car bookmarks))
-                                             (message "Bookmark archived")))))
+  (read-later-check-bookmarks-buffer
+   (lambda (buffer)
+     (read-later-api-full-request 'bookmarks-archive
+                                  :params `(("bookmark_id" . ,(number-to-string id)))
+                                  :type "bookmark"
+                                  :callback (lambda (bookmarks)
+                                              (with-current-buffer buffer
+                                                (progn
+                                                  (read-later--update-bookmark (car bookmarks))
+                                                  (read-later--remove-bookmarks (list id))
+                                                  (message "Bookmark archived"))))))))
 
+(defun read-later-delete-bookmark (id)
+  "Delete bookmark with ID."
+  (read-later-check-bookmarks-buffer
+   (lambda (buffer)
+     (read-later-api-full-request 'bookmarks-delete
+                                  :params `(("bookmark_id" . ,(number-to-string id)))
+                                  :type "bookmark"
+                                  :callback (lambda (&rest _)
+                                              (with-current-buffer buffer
+                                                (progn
+                                                  (read-later--remove-bookmarks (list id))
+                                                  (message "Bookmark deleted: %s" id))))))))
+
+;; ========================================= TABLE UPDATE FUNCTIONS =========================================
 (defun read-later--unarchive-bookmark (id)
   "Archive bookmark with ID."
   (read-later-api-full-request 'bookmarks-unarchive

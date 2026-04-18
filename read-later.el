@@ -132,37 +132,25 @@
 (defun read-later-delete-bookmark-at-point ()
   "Delete bookmark at point."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda (buffer)
-     (let* ((id (tabulated-list-get-id)))
-       (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
-           (read-later-api-full-request 'bookmarks-delete
-                                        :params `(("bookmark_id" . ,(number-to-string id)))
-                                        :type "bookmark"
-                                        :callback (lambda (&rest _)
-                                                    (with-current-buffer buffer
-                                                      (progn
-                                                        (read-later--remove-bookmarks (list id))
-                                                        (message "Bookmark deleted: %s" id))))))))))
+  (let* ((id (tabulated-list-get-id)))
+    (if(yes-or-no-p "Are you sure you want to delete this bookmark?")
+        (read-later-delete-bookmark id))))
+
 ;;;###autoload
 (defun read-later-mark-read-at-point ()
   "Mark the bookmark at point as read."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda ()
-     (let((id (tabulated-list-get-id)))
-       (message (format "Updating read progress for: %S" id))
-       (read-later--update-bookmark-read-progress id 1.0)))))
+  (let((id (tabulated-list-get-id)))
+    (message (format "Updating read progress for: %S" id))
+    (read-later--update-bookmark-read-progress id 1.0)))
 
 ;;;###autoload
 (defun read-later-mark-unread-at-point ()
   "Mark the bookmark at point as unread."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda ()
-     (let((id (tabulated-list-get-id)))
-       (message (format "Updating read progress for: %S" id))
-       (read-later--update-bookmark-read-progress id 0)))))
+  (let((id (tabulated-list-get-id)))
+    (message (format "Updating read progress for: %S" id))
+    (read-later--update-bookmark-read-progress id 0)))
 
 ;;;###autoload
 (defun read-later-clear-filters ()
@@ -184,12 +172,9 @@
 (defun read-later-archive-bookmark-at-point ()
   "Arhive bookmark at point."
   (interactive)
-  (read-later-check-bookmarks-buffer
-   (lambda (_)
-     (let ((id (tabulated-list-get-id)))
-       (progn
-         (read-later--archive-bookmark id)
-         (read-later--remove-bookmarks (list id)))))))
+  (let ((id (tabulated-list-get-id)))
+    (progn
+      (read-later--archive-bookmark id))))
 
 ;;;###autoload
 (defun read-later-open-bookmark-at-point ()
