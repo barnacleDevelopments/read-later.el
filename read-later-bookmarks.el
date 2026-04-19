@@ -10,6 +10,7 @@
 (require 'cl-lib)
 (require 'read-later-api)
 (require 'read-later-utils)
+(require 'shr)
 
 ;; ========================================= FORMATER FUNCTIONS =========================================
 (defun read-later--format-progress (progress)
