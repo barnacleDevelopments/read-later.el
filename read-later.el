@@ -129,6 +129,14 @@
                                                   (message (format "  %S More Bookmarks loaded" read-later-append-limit)))))))))
 
 ;;;###autoload
+(defun read-later-view-bookmark-at-point ()
+  "Open the bookmark at point content in a buffer."
+  (interactive)
+  (let((id (tabulated-list-get-id)))
+    (message "BOOMARKS ID: %S" id)
+    (read-later-view-bookmark id)))
+
+;;;###autoload
 (defun read-later-delete-bookmark-at-point ()
   "Delete bookmark at point."
   (interactive)
