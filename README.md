@@ -28,7 +28,6 @@ Currently bookmarks need to be pulled down each time you start a new Emacs sessi
 - Instapaper OAuth Consumer Key and Secret (see instructions below)
 - [Elfeed package](https://github.com/skeeto/elfeed) (optional)
 - [Link Hint package](https://github.com/noctuid/link-hint.el) (optional)
-- shr package (optional but recommended)
 
 ## Installation
 
