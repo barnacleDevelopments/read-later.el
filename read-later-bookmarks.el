@@ -41,6 +41,23 @@
 
 
 ;; ========================================= ACTION FUNCTIONS =========================================
+(defun read-later-view-bookmark (id)
+  "Open the bookmark content with ID in buffer."
+  (read-later-check-bookmarks-buffer
+   (lambda (buffer)
+     (let ((params `(("bookmark_id" . ,(number-to-string id)))))
+       (read-later-api-full-request 'bookmarks-text
+                                    :params params
+                                    :type "html"
+                                    :callback (lambda (text)
+                                                (with-current-buffer buffer
+                                                  (let* ((view-bookmark-buffer (get-buffer-create (format "*Read Later Bookmark %S*" id))))
+                                                    (with-current-buffer view-bookmark-buffer
+                                                      (progn
+                                                        (goto-char (point-max))
+                                                        (insert text)
+                                                        (shr-render-buffer view-bookmark-buffer)))))))))))
+
 (defun read-later--update-bookmark-read-progress (id progress)
   "Update the bookmarks with ID to read PROGRESS."
   (read-later-check-bookmarks-buffer

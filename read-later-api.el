@@ -300,19 +300,22 @@ Returns the oauth-access-token object on success, or nil on failure."
 (defun read-later-api--handle-response (result &rest args)
   "Parse the JSON body from RESULT and extract items of TYPE.
 ARGS should contain :type keyword with value like \"bookmark\" or \"highlight\"."
-  (let ((type (plist-get args :type))
-        (body (plist-get result :body)))
+  (let* ((type (plist-get args :type))
+         (body (plist-get result :body)))
     (if (plist-get result :success)
-        (let* ((json-object-type 'plist)
-               (json-key-type 'keyword)
-               (json-array-type 'list)
-               (parsed (json-read-from-string body))
-               ;; Filter the flat array for items matching the type
-               (items (cl-remove-if-not
-                       (lambda (item)
-                         (string= (plist-get item :type) type))
-                       parsed)))
-          items)
+        (if (string= type 'html)
+            body
+          (let* ((json-object-type 'plist)
+                 (json-key-type 'keyword)
+                 (json-array-type 'list)
+                 (parsed (json-read-from-string body))
+                 ;; Filter the flat array for items matching the type
+                 (items (cl-remove-if-not
+                         (lambda (item)
+                           (string= (plist-get item :type) type))
+                         parsed)))
+            items))
+      
       (error "Failed to fetch resource: %s" (plist-get result :message)))))
 
 (defun read-later-api-full-request (endpoint &rest args)
