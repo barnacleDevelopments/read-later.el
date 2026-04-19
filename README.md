@@ -127,11 +127,6 @@ If your 1Password item has a different name, override the lookup host:
 ```
 
 > **Note:** When authenticating, you may be prompted for your 1Password master password up to four times on first use of the Full API (once each for the username and password fields of both your account and OAuth consumer credentials). The Simple API prompts twice. Subsequent calls will not prompt again as credentials are cached for the session.
->
-> To minimize prompts, choose one of the following:
-> - **Desktop app integration** *(recommended)* — in 1Password → Settings → Developer, enable "Integrate with 1Password CLI". The CLI will use the desktop app's unlock state (biometric or system password), so no separate signin is needed.
-> - **Shell login** — add `eval $(op signin)` to your `~/.bash_profile` or `~/.zprofile` to authenticate once at login. Sessions last 30 minutes by default.
-> - **Extend session timeout** — add `"session_timeout": 86400` to `~/.config/op/config` to keep the session alive for 24 hours.
 
 #### Option 4: Using password-store (Encrypted)
 
