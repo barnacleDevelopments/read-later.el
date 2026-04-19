@@ -26,6 +26,9 @@ Currently bookmarks need to be pulled down each time you start a new Emacs sessi
 - Emacs 27.1 or higher
 - An Instapaper account (see setup below)
 - Instapaper OAuth Consumer Key and Secret (see instructions below)
+- Elfeed package (optional)
+- Link Hint package (optional)
+- shr package (optional but recommended)
 
 ## Installation
 
