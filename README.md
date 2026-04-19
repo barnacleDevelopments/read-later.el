@@ -7,6 +7,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
 
 - Add URLs to your Instapaper account from anywhere in Emacs
 - Integration with elfeed for saving RSS feed entries to Instapaper
+- Integration with link-hint for saving visible urls to Instapaper
 - View your bookmarks and tags
 - Fully manage your bookmarks
   - Delete bookmarks
@@ -15,6 +16,7 @@ Manage your Instapaper account using Emacs! This project was inspired by the use
   - Filter bookmarks by tag
   - Filter bookmarks by folder
   - Interactively add link using link-hint
+  - View bookmark rendered HTML in a buffer
   - More comming soon!
 - Local caching comming soon!
  
