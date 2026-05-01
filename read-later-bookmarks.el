@@ -37,7 +37,7 @@
               (list (plist-get bookmark :bookmark_id)
                     (vector (or (propertize (plist-get bookmark :title) 'face face) "")
                             (read-later--format-tags (plist-get bookmark :tags))
-                            (propertize (or (plist-get bookmark :description) "")) 'face face)
+                            (propertize (or (plist-get bookmark :description) "") 'face face))
                     )))
           bookmarks))
 
