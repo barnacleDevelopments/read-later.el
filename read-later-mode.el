@@ -28,8 +28,7 @@
 (define-derived-mode read-later-mode tabulated-list-mode "Read-Later Bookmarks"
   "Major mode for viewing Instapaper bookmarks."
   (setq tabulated-list-format [("Title" 50 t)
-                               ("Progress" 10 t)
-                               ("Tags" 30 t)
+                               ("Tags" 40 t)
                                ("Description" 100 t)])
   (setq tabulated-list-padding 2)
   (tabulated-list-init-header))

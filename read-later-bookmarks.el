@@ -19,6 +19,7 @@
       (format "%.0f%%" (* progress 100))
     "0%"))
 
+;; TODO globalize tag color
 (defun read-later--format-tags (tags)
   "Format TAGS (list of tag plists) as a comma-separated colorized string."
   (if (and tags (listp tags) (> (length tags) 0))
@@ -29,17 +30,16 @@
                  tags "  ")
     ""))
 
-;;; TODO rename this to create-bookmark-table-row
 (defun read-later--create-bookmark-entries (bookmarks)
   "Format BOOKMARKS data."
   (mapcar (lambda (bookmark)
-            (list (plist-get bookmark :bookmark_id)
-                  (vector (or (plist-get bookmark :title) "")
-                          (read-later--format-progress (plist-get bookmark :progress))
-                          (read-later--format-tags (plist-get bookmark :tags))
-                          (or (plist-get bookmark :description) ""))))
+            (let ((face (if (< (plist-get bookmark :progress) 1) 'read-later-unread-tabulated-row-face 'read-later-read-tabulated-row-face)))
+              (list (plist-get bookmark :bookmark_id)
+                    (vector (or (propertize (plist-get bookmark :title) 'face face) "")
+                            (read-later--format-tags (plist-get bookmark :tags))
+                            (propertize (or (plist-get bookmark :description) "")) 'face face)
+                    )))
           bookmarks))
-
 
 ;; ========================================= ACTION FUNCTIONS =========================================
 (defun read-later-view-bookmark (id)
