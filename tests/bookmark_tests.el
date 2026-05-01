@@ -16,13 +16,11 @@
   (should (equal (read-later--create-bookmark-entries
                   '((:bookmark_id 1945647911
                      :title "Exploring the depths of the ocean"
-                     :progress 0.5
                      :tags ((:name "web") (:name "programming"))
                      :description "What does it take to explore the depths of the ocean.")))
                  '((1945647911
-                    ["Exploring the depths of the ocean" 
-                     "50%" 
-                     "web  programming" 
+                    ["Exploring the depths of the ocean"
+                     "web  programming"
                      "What does it take to explore the depths of the ocean."])))))
 
 (provide 'bookmark-tests)
