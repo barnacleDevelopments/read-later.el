@@ -21,7 +21,6 @@
                      :description "What does it take to explore the depths of the ocean.")))
                  '((1945647911
                     ["Exploring the depths of the ocean" 
-                     "50%" 
                      "web  programming" 
                      "What does it take to explore the depths of the ocean."])))))
 

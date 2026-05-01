@@ -47,5 +47,11 @@ Only filters if folder is not specified."
 (defvar-local read-later-tag read-later-default-tag
   "Current active tags for filtering.")
 
+(defface read-later-unread-tabulated-row-face '((t (:weight bold)))
+  "The unread face for bookmark entries.")
+
+(defface read-later-read-tabulated-row-face '((t (:weight normal)))
+  "The unread face for bookmark entries.")
+
 (provide 'read-later-globals)
 ;;; read-later-globals.el ends here
