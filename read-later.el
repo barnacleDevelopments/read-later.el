@@ -82,7 +82,9 @@
   "Add the URL at point to Instapaper."
   (interactive)
   (let ((url (thing-at-point 'url)))
-    (read-later-add-url url)))
+    (if url
+        (read-later-add-url url)
+      (message "No URL at point."))))
 
 ;;;###autoload
 (defun read-later ()
@@ -230,16 +232,25 @@
 (defun read-later-link-hint-add-url ()
   "Add url using link-hint."
   (interactive)
-  (link-hint-copy-link)
-  (read-later-add-url (car kill-ring)))
+  ;; link-hint is an optional dependency, so we require it here at runtime.
+  (if (require 'link-hint nil 'noerror)
+      (progn
+        (link-hint-copy-link)
+        (read-later-add-url (car kill-ring)))
+    (message "Please install the `link-hint' package to use this command.")))
 
 ;; ========================================= ELFEED ACTION FUNCTIONS =========================================
 ;;;###autoload
 (defun read-later-add-elfeed-entry-at-point()
   "Add the elfeed entry at point in show buffer."
   (interactive)
-  (let ((url (or (elfeed-entry-link (elfeed-search-selected :ignore-region)))))
-    (read-later-add-url url)))
+  ;; elfeed is an optional dependency, so we require it here at runtime.
+  (if (require 'elfeed nil 'noerror)
+      (let ((url (elfeed-entry-link (elfeed-search-selected :ignore-region))))
+        (if url
+            (read-later-add-url url)
+          (message "No elfeed link found at point.")))
+    (message "Please install the `elfeed' package to use this command.")))
 
 (provide 'read-later)
 

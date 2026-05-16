@@ -18,6 +18,11 @@
   "List of bookmark plists for the current buffer.")
 
 ;; Customize Variables
+(defgroup read-later nil
+  "Customize read-later."
+  :prefix "read-later-"
+  :group 'applications)
+
 (defcustom read-later-update-limit 25
   "The Instapaper API limit query parameter value."
   :type 'integer
@@ -48,10 +53,12 @@ Only filters if folder is not specified."
   "Current active tags for filtering.")
 
 (defface read-later-unread-tabulated-row-face '((t (:weight bold)))
-  "The unread face for bookmark entries.")
+  "The unread face for bookmark entries."
+  :group 'read-later)
 
 (defface read-later-read-tabulated-row-face '((t (:weight normal)))
-  "The unread face for bookmark entries.")
+  "The unread face for bookmark entries."
+  :group 'read-later)
 
 (provide 'read-later-globals)
 ;;; read-later-globals.el ends here
