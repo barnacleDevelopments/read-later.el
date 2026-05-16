@@ -38,6 +38,7 @@
 
 ;;; Code:
 (require 'read-later-globals)
+(require 'read-later-db)
 (require 'read-later-mode)
 (require 'read-later-api)
 (require 'read-later-bookmarks)
@@ -91,7 +92,9 @@
   "Enter read-later. Open the bookmarks table buffer."
   (interactive)
   (let* ((bookmarks-buffer (get-buffer "*Read-Later Bookmarks*")))
-    (unless bookmarks-buffer (read-later--create-bookmarks-buffer read-later--bookmarks-data))
+    (unless bookmarks-buffer
+      (setq read-later--bookmarks-data (read-later-db-get-all-bookmarks))
+      (read-later--create-bookmarks-buffer read-later--bookmarks-data))
     (switch-to-buffer "*Read-Later Bookmarks*")))
 
 (defun read-later-update ()
@@ -107,6 +110,7 @@
                                     :params params
                                     :type "bookmark"
                                     :callback (lambda (bookmarks)
+                                                (read-later-db-upsert-bookmarks bookmarks)
                                                 (with-current-buffer buffer
                                                   (read-later--display-bookmarks bookmarks)
                                                   (message (format "  %S More Bookmarks loaded" read-later-append-limit)))))))))
@@ -126,6 +130,7 @@
                                     :params params
                                     :type "bookmark"
                                     :callback (lambda (bookmarks)
+                                                (read-later-db-upsert-bookmarks bookmarks)
                                                 (with-current-buffer buffer
                                                   (read-later--append-bookmarks bookmarks)
                                                   (message (format "  %S More Bookmarks loaded" read-later-append-limit)))))))))
@@ -174,6 +179,7 @@
   (interactive)
   (read-later-check-bookmarks-buffer
    (lambda (_)
+     (read-later-db-clear-bookmarks)
      (setq read-later--bookmarks-data nil)
      (read-later-clear-filters)
      (read-later--display-bookmarks nil))))

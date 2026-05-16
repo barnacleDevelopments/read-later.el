@@ -23,6 +23,11 @@
   :prefix "read-later-"
   :group 'applications)
 
+(defcustom read-later-db-file (expand-file-name "read-later.sqlite" user-emacs-directory)
+  "The path to the SQLite database file for read-later."
+  :type 'string
+  :group 'read-later)
+
 (defcustom read-later-update-limit 25
   "The Instapaper API limit query parameter value."
   :type 'integer
