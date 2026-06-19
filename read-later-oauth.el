@@ -219,11 +219,11 @@ oauth headers."
                                                     (url-hexify-string (cdr pair))))
                                           read-later-oauth-post-vars-alist
                                           "&"))))
-      (cond
-       (async-callback (url-retrieve (read-later-oauth-request-url req)
-                                     async-callback cb-data))
-       (read-later-oauth-use-curl (read-later-oauth-curl-retrieve (read-later-oauth-request-url req)))
-       (t (url-retrieve-synchronously (read-later-oauth-request-url req)))))))
+      (let ((request-url (read-later-oauth-request-url req)))
+        (cond
+         (async-callback (url-retrieve request-url async-callback cb-data))
+         (read-later-oauth-use-curl (read-later-oauth-curl-retrieve request-url))
+         (t (url-retrieve-synchronously request-url)))))))
 
 (defun read-later-oauth-fetch-url (access-token url)
   "Wrapper around url-retrieve-synchronously using the the authorized-token
@@ -263,7 +263,6 @@ read-later-oauth-request objects directly"
                                  :params `(("oauth_consumer_key" . ,consumer-key)
                                            ("oauth_timestamp" . ,(read-later-oauth-epoch-string))
                                            ("oauth_nonce" . ,(read-later-oauth-make-nonce))
-                                           ("oauth_callback" . ,read-later-oauth-callback-url)
                                            ("oauth_version" . "1.0"))))
 
 ;; HMAC-SHA1 specific code
@@ -340,8 +339,13 @@ For example: http://example.com?param=1 returns http://example.com"
 
 (defun read-later-oauth-fetch-token (req)
   "Fetches a token based on the given request object"
-  (let ((token (make-read-later-oauth-t)))
-    (set-buffer (read-later-oauth-do-request req))
+  (let ((token (make-read-later-oauth-t))
+        (buf (read-later-oauth-do-request req)))
+    (set-buffer buf)
+    (goto-char (point-min))
+    (unless (re-search-forward "^HTTP/[0-9.]+ 200" nil t)
+      (let ((body (buffer-substring-no-properties (point-min) (point-max))))
+        (error "OAuth token request failed:\n%s" body)))
     (goto-char (point-min))
     (let ((linebreak (search-forward "\n\n" nil t nil)))
       (when linebreak
@@ -359,6 +363,9 @@ For example: http://example.com?param=1 returns http://example.com"
                (setf (read-later-oauth-t-token-secret token) (cadr pair)))
               ((equal (car pair) "oauth_token")
                (setf (read-later-oauth-t-token token) (cadr pair)))))
+    (unless (and (read-later-oauth-t-token token)
+                 (read-later-oauth-t-token-secret token))
+      (error "OAuth token response did not contain oauth_token/oauth_token_secret"))
     token))
 
 (defun read-later-oauth-do-request (req)
