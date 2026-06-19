@@ -146,8 +146,7 @@ Looks up host `read-later-api-host'.
 Returns a cons cell (USERNAME . PASSWORD) or nil if not found."
   (or read-later-api--cached-credentials
       (setq read-later-api--cached-credentials
-            (let ((creds (read-later-api--lookup-credentials nil)))
-              creds))))
+            (read-later-api--lookup-credentials read-later-api-host))))
 
 (defun read-later-api--make-auth-header (credentials)
   "Create Basic Auth header from CREDENTIALS cons cell."
@@ -252,7 +251,6 @@ Example usage:
 Retrieves consumer credentials from 'instapaper-oauth' and user credentials
 from 'www.instapaper.com' in auth-source, then uses xAuth to obtain an
 access token. The token is cached in `read-later-api--oauth-access-token'.
-
 Returns the oauth-access-token object on success, or nil on failure."
   (let* ((consumer-creds (read-later-api--get-oauth-consumer-credentials))
          (user-creds (read-later-api--get-credentials))
@@ -260,30 +258,23 @@ Returns the oauth-access-token object on success, or nil on failure."
          (consumer-secret (cdr consumer-creds))
          (username (car user-creds))
          (password (cdr user-creds)))
-
     (unless consumer-creds
       (error "OAuth consumer credentials not found. Please add 'instapaper-oauth' to your authinfo file"))
-
     (unless user-creds
       (error "User credentials not found. Please add 'www.instapaper.com' to your authinfo file"))
-
     ;; Create OAuth request for xAuth access token
     (let* ((access-token-url "https://www.instapaper.com/api/1/oauth/access_token")
            (req (read-later-oauth-make-request access-token-url consumer-key))
            (xauth-params `(("x_auth_mode" . "client_auth")
                            ("x_auth_username" . ,username)
                            ("x_auth_password" . ,password))))
-
       ;; Set HTTP method to POST (required by Instapaper)
       (setf (read-later-oauth-request-http-method req) "POST")
-
       ;; Add xAuth parameters to the request params for signature calculation
       (setf (read-later-oauth-request-params req)
             (append (read-later-oauth-request-params req) xauth-params))
-
-      ;; Sign the request with HMAC-SHA1
+      ;; Sign the request with HMAC-SHA1 -- exactly once, after method+params are final
       (read-later-oauth-sign-request-hmac-sha1 req consumer-secret)
-
       ;; Fetch the access token with xAuth params in POST body
       (let ((read-later-oauth-post-vars-alist xauth-params))
         (condition-case err
@@ -383,6 +374,7 @@ Example usage:
        read-later-api--oauth-access-token
        api-url
        (if (and callback (not (equal endpoint 'account-verify)))
+           ;; if the endpoint is account-verify, we want to return the raw response to the callback so it can handle success/failure itself
            (lambda (response)
              (let* ((result (read-later-api--parse-response response))
                     (success (plist-get result :success)))
@@ -391,6 +383,7 @@ Example usage:
                      (kill-buffer (current-buffer))
                      (funcall callback (read-later-api--handle-response result :type type)))
                  (message (format "Request failed against %S. Please try again or verify that your crendentials are correct." type)))))
+         ;; if no callback provided, just return t on success or nil on failure
          (lambda (&rest_)(funcall callback t)))
        nil))))
 
