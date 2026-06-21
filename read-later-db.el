@@ -8,7 +8,7 @@
 ;; Version: 2.2.0
 ;; Keywords: database tools
 ;; Homepage: https://github.com/barnacleDevelopments/read-later.el
-;; Package-Requires: ((emacs "27.1") (emacsql-sqlite))
+;; Package-Requires: ((emacs "29.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -38,8 +38,10 @@
 ;;
 ;;; Code:
 
+;;; read-later-db.el --- Database layer for read-later -*- lexical-binding: t; -*-
+
 (require 'emacsql)
-(require 'emacsql-sqlite)
+(require 'emacsql-sqlite-builtin)
 (require 'json)
 (require 'read-later-globals)
 
@@ -47,19 +49,25 @@
   "The database connection for read-later.")
 
 (defun read-later-db--connect ()
-  "Establish connection to the read-later database."
+  "Establish connection to the read-later database, initializing it if needed."
   (unless (and read-later-db--connection (emacsql-live-p read-later-db--connection))
-    (setq read-later-db--connection (emacsql-sqlite read-later-db-file))))
+    (setq read-later-db--connection (emacsql-sqlite-builtin read-later-db-file))
+    (read-later-db--init-schema)))
+
+(defun read-later-db--init-schema ()
+  "Create the bookmarks table if it doesn't already exist.
+Called automatically by `read-later-db--connect' on a fresh connection."
+  (emacsql read-later-db--connection
+           [:create-table :if-not-exists bookmarks
+                          ([(bookmark_id integer :primary-key) (data text)])]))
 
 ;;;###autoload
 (defun read-later-db-init ()
-  "Initialize the database and create tables if they don't exist."
+  "Initialize the database and create tables if they don't exist.
+Other functions in this package call `read-later-db--connect' themselves,
+so calling this explicitly first is optional."
   (interactive)
   (read-later-db--connect)
-  (emacsql read-later-db--connection
-           [:create-table-if-not-exists bookmarks
-            ([bookmark_id] integer :primary-key)
-            ([data] text)])
   (message "Read-later database initialized."))
 
 (defun read-later-db-upsert-bookmarks (bookmarks)
@@ -67,15 +75,14 @@
 BOOKMARKS is a list of plists."
   (when bookmarks
     (read-later-db--connect)
-    (emacsql-transaction
-     read-later-db--connection
-     (dolist (bookmark bookmarks)
-       (emacsql read-later-db--connection
-                [:insert-or-replace-into bookmarks
-                 ([bookmark_id] [data])
-                 :values
-                 (,(plist-get bookmark :bookmark_id)
-                  ,(json-encode bookmark))])))))
+    (emacsql-with-transaction read-later-db--connection
+      (dolist (bookmark bookmarks)
+        (emacsql read-later-db--connection
+                 [:insert-or-replace-into bookmarks
+                  [bookmark_id data]
+                  :values $v1]
+                 (vector (plist-get bookmark :bookmark_id)
+                         (json-encode bookmark)))))))
 
 (defun read-later-db-get-all-bookmarks ()
   "Get all bookmarks from the database."
@@ -83,7 +90,7 @@ BOOKMARKS is a list of plists."
       (progn
         (read-later-db--connect)
         (let ((results (emacsql read-later-db--connection
-                                [:select 'data :from 'bookmarks])))
+                                [:select data :from bookmarks])))
           (mapcar (lambda (row)
                     (let ((json-object-type 'plist))
                       (json-read-from-string (car row))))
@@ -94,15 +101,14 @@ BOOKMARKS is a list of plists."
   "Delete bookmark with BOOKMARK-ID from database."
   (read-later-db--connect)
   (emacsql read-later-db--connection
-           [:delete-from 'bookmarks :where (= bookmark_id $s1)]
+           [:delete-from bookmarks :where (= bookmark_id $s1)]
            bookmark-id))
 
 (defun read-later-db-clear-bookmarks ()
   "Delete all bookmarks from the database."
   (read-later-db--connect)
   (emacsql read-later-db--connection
-           [:delete-from 'bookmarks]))
+           [:delete-from bookmarks]))
 
 (provide 'read-later-db)
-
 ;;; read-later-db.el ends here
